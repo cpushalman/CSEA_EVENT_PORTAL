@@ -374,7 +374,16 @@ export const submitCrosswordAnswer = async (req, res) => {
       if (isCorrect) correct++;
       result.down[k] = { submitted: submittedDown[k], expected: expected ?? null, correct: isCorrect };
     }
-
+    // Check if all required answers were submitted
+    const totalRequired = Object.keys(storedAcross).length + Object.keys(storedDown).length;
+    const totalSubmitted = Object.keys(submittedAcross).length + Object.keys(submittedDown).length;
+    
+    if (totalSubmitted < totalRequired) {
+      return res.status(400).json({
+        success: false,
+        message: `Incomplete submission. Expected ${totalRequired} answers, received ${totalSubmitted}.`
+      });
+    }
     const allCorrect = total > 0 && correct === total;
 
     let playerAnswer = await PlayerAnswers.findOne({
