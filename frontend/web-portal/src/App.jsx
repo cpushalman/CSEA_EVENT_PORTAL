@@ -5,6 +5,7 @@ import RoundTwo from './components/RoundTwo'
 import Login from './components/Login'
 // import StrangerThingsIntro from './components/StrangerThingsIntro' // Disabled - using video intro instead
 import VideoIntro from './components/VideoIntro'
+import GateSequence from './components/GateSequence'
 
 
 
@@ -15,6 +16,7 @@ function App() {
   const [fragments, setFragments] = useState([]);
   const [showIntro, setShowIntro] = useState(false); // Will be set based on localStorage check
   const [loginFadeIn, setLoginFadeIn] = useState(false);
+  const [showGateSequence, setShowGateSequence] = useState(false);
 
   // On mount, check localStorage for a saved login and intro status
   useEffect(() => {
@@ -104,6 +106,8 @@ function App() {
               localStorage.setItem('loggedInYear', year);
               if (rollNum) localStorage.setItem('rollNumber', rollNum);
             } catch (e) { /* ignore */ }
+            // Trigger gate sequence after login
+            setShowGateSequence(true);
           }} />
           <footer className="footer">
             <p>CSEA Event Portal - Stranger Things Edition</p>
@@ -126,6 +130,18 @@ function App() {
           />
         )}
       </>
+    );
+  }
+
+  // Show gate sequence after login (before Round 1)
+  if (showGateSequence) {
+    return (
+      <GateSequence 
+        onComplete={() => {
+          setShowGateSequence(false);
+          // Gate sequence complete, proceed to Round 1
+        }} 
+      />
     );
   }
 

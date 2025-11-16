@@ -2,6 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 // Try importing from assets, fallback to public folder
 import loginBgVideo from '../assets/login-bg.mp4';
 
+// ============================================================================
+// BACKEND CONNECTION TOGGLE
+// Set to false to use mock authentication (no backend required)
+// Set to true to connect to real backend API
+// ============================================================================
+const USE_BACKEND = false; // Change to true when ready to reconnect backend
+
 // Inline minimal API client (no extra files)
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
 
@@ -19,6 +26,67 @@ function decodeJwt(token) {
   }
 }
 
+// ============================================================================
+// MOCK AUTHENTICATION (No Backend Required)
+// ============================================================================
+function generateMockToken(email, year) {
+  // Create a simple mock JWT-like token (not a real JWT, just for localStorage)
+  const payload = {
+    email: email.toLowerCase(),
+    year: year,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour expiry
+  };
+  // Simple base64 encoding (not secure, just for mock)
+  const encoded = btoa(JSON.stringify(payload));
+  return `mock.${encoded}.token`;
+}
+
+function determineYearFromEmail(email) {
+  // Extract first 2 digits from email (e.g., "24z368" -> 24)
+  const match = /^(\d{2})/.exec(email);
+  if (match) {
+    const yearPrefix = parseInt(match[1], 10);
+    // Heuristic: 24 = 2nd year, 23 = 1st year, etc.
+    // Adjust this logic based on your actual year determination
+    // For now: if starts with 24, assume 2nd year; otherwise 1st year
+    return yearPrefix >= 24 ? 2 : 1;
+  }
+  // Default to 1st year if can't determine
+  return 1;
+}
+
+async function mockRequestOtp(email) {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+  // Always succeed in mock mode
+  return { message: 'OTP sent to email (mock mode)' };
+}
+
+async function mockVerifyOtpAndStore(email, otp) {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 600));
+  
+  // Accept any 6-digit OTP in mock mode
+  if (!/^\d{6}$/.test(otp)) {
+    throw new Error('Please enter a 6-digit code');
+  }
+  
+  const year = determineYearFromEmail(email);
+  const mockToken = generateMockToken(email, year);
+  setToken(mockToken);
+  
+  // Return mock claims similar to real JWT structure
+  return {
+    token: mockToken,
+    claims: { email: email.toLowerCase(), year: year },
+    redirectPath: `/portal/year${year}`
+  };
+}
+
+// ============================================================================
+// REAL BACKEND API FUNCTIONS (Used when USE_BACKEND = true)
+// ============================================================================
 async function apiFetch(path, { method = 'GET', headers = {}, body } = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
@@ -45,6 +113,25 @@ async function verifyOtpAndStore(email, otp) {
   if (data?.token) setToken(data.token);
   const claims = data?.token ? decodeJwt(data.token) : null;
   return { token: data?.token, claims, redirectPath: data?.redirectPath };
+}
+
+// ============================================================================
+// UNIFIED AUTHENTICATION FUNCTIONS (Switches between mock and real)
+// ============================================================================
+async function requestOtpUnified(email) {
+  if (USE_BACKEND) {
+    return requestOtp(email);
+  } else {
+    return mockRequestOtp(email);
+  }
+}
+
+async function verifyOtpAndStoreUnified(email, otp) {
+  if (USE_BACKEND) {
+    return verifyOtpAndStore(email, otp);
+  } else {
+    return mockVerifyOtpAndStore(email, otp);
+  }
 }
 
 const Login = ({ onLogin }) => {
@@ -118,8 +205,13 @@ const Login = ({ onLogin }) => {
 
     try {
       setLoading(true);
-      await requestOtp(trimmed);
+      await requestOtpUnified(trimmed);
       setCodeSent(true);
+      // Show helpful message in mock mode
+      if (!USE_BACKEND) {
+        setError('Mock mode: Enter any 6-digit code (e.g., 123456)');
+        setTimeout(() => setError(''), 3000);
+      }
     } catch (err) {
       setError(err?.message || 'Failed to send OTP');
     } finally {
@@ -149,8 +241,8 @@ const Login = ({ onLogin }) => {
     setError('');
     try {
       setLoading(true);
-      const { token, claims } = await verifyOtpAndStore(email.trim().toLowerCase(), codeInput.trim());
-      // Determine year from JWT claims
+      const { token, claims } = await verifyOtpAndStoreUnified(email.trim().toLowerCase(), codeInput.trim());
+      // Determine year from JWT claims (or mock claims)
       const yearNum = Number(claims?.year);
       const yearLabel = yearNum === 1 ? '1st' : yearNum === 2 ? '2nd' : '';
       // Extract roll number from email (e.g., "24z368" from "24z368@psgtech.ac.in")
@@ -234,6 +326,11 @@ const Login = ({ onLogin }) => {
             <button type="submit" className="submit-button" disabled={loading} style={{ width: '100%', maxWidth: 200, fontSize: '1.2rem', padding: '0.75rem' }}>
               {loading ? 'Sending…' : 'Send Code'}
             </button>
+            {!USE_BACKEND && (
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginTop: '0.5rem' }}>
+                🔧 Mock Mode: No backend connection required
+              </p>
+            )}
           </form>
         ) : (
             <div className="code-challenge" style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
@@ -243,16 +340,22 @@ const Login = ({ onLogin }) => {
                   type="text"
                   value={codeInput}
                   onChange={(e) => setCodeInput(e.target.value)}
-                  placeholder="Enter OTP"
+                  placeholder={USE_BACKEND ? "Enter OTP" : "Enter any 6-digit code (e.g., 123456)"}
                   className="answer-input"
                   required
                   autoFocus={false}
+                  maxLength={6}
                   style={{ width: '100%', maxWidth: 350, fontSize: '1.1rem', padding: '0.75rem' }}
                 />
                 <button type="submit" className="submit-button" disabled={loading} style={{ width: '100%', maxWidth: 200, fontSize: '1.2rem', padding: '0.75rem' }}>
                   {loading ? 'Verifying…' : 'Login'}
                 </button>
               </form>
+              {!USE_BACKEND && (
+                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginTop: '0.5rem' }}>
+                  💡 Mock Mode: Any 6-digit code will work
+                </p>
+              )}
             </div>
         )}
         {error && <p className="login-error">{error}</p>}
