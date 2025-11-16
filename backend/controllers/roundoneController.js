@@ -1,4 +1,4 @@
-import Questions from "../models/roundonemodel.js"
+import Questions,{Crossword} from "../models/roundonemodel.js"
 import steg from "../models/stegmodels.js"
 
 export const addqn=async(req,res)=>{
@@ -121,40 +121,59 @@ export const getallquestion = async (req, res) => {
         const parsedYr = Number(yr);
         const filter = Number.isNaN(parsedYr) ? { yr } : { yr: parsedYr };
 
-        const [questions, stegQuestions] = await Promise.all([
+        // support crosswords that may use either `yr` or `year` field
+        const crosswordFilter = Number.isNaN(parsedYr)
+          ? { $or: [{ yr }, { year: yr }] }
+          : { $or: [{ yr: parsedYr }, { year: parsedYr }] };
+
+        const [questions, stegQuestions, crosswords] = await Promise.all([
             Questions.find(filter),
-            steg.find(filter)
+            steg.find(filter),
+            Crossword.find(crosswordFilter)
         ]);
-const combined = [
-  ...questions.map((q, index) => ({
-    _id: q._id,
-    id: index + 1,
-    title: q.title,
-    description: q.descp,      // ★ normalize descp → description
-    challenge: q.qn,           // ★ normalize qn → challenge
-    answer: q.ans,             // ★ normalize ans → answer
-    type: q.type,
-    hint: q.hint || null,
-    yr: q.yr,
-    source: "roundone"
-  })),
 
-  ...stegQuestions.map((s, index) => ({
-    _id: s._id,
-    id: questions.length + index + 1,
-    title: s.title,
-    description: s.descp,
-    challenge: s.qn,
-    answer: s.ans,
-    type: s.type,
-    hint: s.hint || null,
-    url: s.url || null,
-    yr: s.yr,
-    source: "steg"
-  }))
-];
+        const combined = [
+          ...questions.map((q, index) => ({
+            _id: q._id,
+            id: index + 1,
+            title: q.title,
+            description: q.descp,
+            challenge: q.qn,
+            answer: q.ans,
+            type: q.type,
+            hint: q.hint || null,
+            yr: q.yr,
+            source: "roundone"
+          })),
 
+          ...stegQuestions.map((s, index) => ({
+            _id: s._id,
+            id: questions.length + index + 1,
+            title: s.title,
+            description: s.descp,
+            challenge: s.qn,
+            answer: s.ans,
+            type: s.type,
+            hint: s.hint || null,
+            url: s.url || null,
+            yr: s.yr,
+            source: "steg"
+          })),
 
+          ...crosswords.map((c, index) => ({
+            _id: c._id,
+            id: questions.length + stegQuestions.length + index + 1,
+            title: c.title || `Crossword ${index + 1}`,
+            description: c.description || null,
+            // supply the answers object as the "challenge" so frontend can render crossword entries
+            challenge: c.answers || {},
+            answer: null,
+            type: "crossword",
+            hint: null,
+            yr: c.yr ?? c.year ?? parsedYr,
+            source: "crossword"
+          }))
+        ];
 
         if (combined.length === 0) {
             return res.status(404).json({
@@ -166,7 +185,7 @@ const combined = [
         res.status(200).json({
             success: true,
             count: combined.length,
-            counts: { roundone: questions.length, steg: stegQuestions.length },
+            counts: { roundone: questions.length, steg: stegQuestions.length, crossword: crosswords.length },
             data: combined,
         });
     }  catch (error) {
@@ -269,3 +288,24 @@ export const deleteqn = async (req, res) => {
     }
 }
 // ...existing code...
+
+export const createCrossword = async (req, res) => {
+  try {
+    const { answers, year } = req.body;
+    if (!answers || typeof answers !== 'object') {
+      return res.status(400).json({ success: false, message: 'answers object required' });
+    }
+    if (answers.across == null || answers.down == null) {
+      return res.status(400).json({ success: false, message: 'answers.across and answers.down required' });
+    }
+    const y = Number(year);
+    if (Number.isNaN(y)) return res.status(400).json({ success: false, message: 'valid year required' });
+
+    // Mongoose Map accepts plain objects for storage
+    const created = await Crossword.create({ answers, year: y });
+    return res.status(201).json({ success: true, data: created });
+  } catch (err) {
+    return res.status(400).json({ success: false, message: err.message });
+  }
+};
+

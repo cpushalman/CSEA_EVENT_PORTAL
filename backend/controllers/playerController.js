@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import PlayerAnswers from "../models/PlayerAnswers.js";
-import Questions from "../models/roundonemodel.js";
+import Questions, {Crossword} from "../models/roundonemodel.js";
 import steg from "../models/stegmodels.js";
 export const submitAnswer = async (req, res) => {
   try {
@@ -313,5 +313,128 @@ export const submitStegAnswer = async (req, res) => {
       success: false,
       message: "Internal server error",
     });
+  }
+};
+
+// ...existing code...
+export const submitCrosswordAnswer = async (req, res) => {
+  try {
+    const { crosswordId, answers } = req.body;
+    const { email, year, name } = req.user;
+
+    if (!crosswordId || !answers || typeof answers !== "object") {
+      return res.status(400).json({
+        success: false,
+        message: "crosswordId and answers object are required",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(crosswordId)) {
+      return res.status(400).json({ success: false, message: "Invalid crosswordId" });
+    }
+
+    const crossword = await Crossword.findById(crosswordId);
+    if (!crossword) {
+      return res.status(404).json({ success: false, message: "Crossword not found" });
+    }
+
+    // year check (support yr or year)
+    if (crossword.yr != null && year != null && Number(crossword.yr) !== Number(year)) {
+      return res.status(403).json({ success: false, message: "You can only submit crosswords for your year" });
+    }
+    if (crossword.year != null && year != null && Number(crossword.year) !== Number(year)) {
+      return res.status(403).json({ success: false, message: "You can only submit crosswords for your year" });
+    }
+
+    const normalize = (v) => (typeof v === "string" ? v.trim().toLowerCase() : "");
+
+    const storedAcross = (crossword.answers && crossword.answers.across) || {};
+    const storedDown = (crossword.answers && crossword.answers.down) || {};
+
+    const getExpected = (store, key) => (typeof store.get === "function" ? store.get(key) : store?.[key]);
+
+    const result = { across: {}, down: {} };
+    let total = 0;
+    let correct = 0;
+
+    const submittedAcross = answers.across || {};
+    for (const k of Object.keys(submittedAcross)) {
+      total++;
+      const expected = getExpected(storedAcross, k);
+      const isCorrect = normalize(submittedAcross[k]) === normalize(expected);
+      if (isCorrect) correct++;
+      result.across[k] = { submitted: submittedAcross[k], expected: expected ?? null, correct: isCorrect };
+    }
+
+    const submittedDown = answers.down || {};
+    for (const k of Object.keys(submittedDown)) {
+      total++;
+      const expected = getExpected(storedDown, k);
+      const isCorrect = normalize(submittedDown[k]) === normalize(expected);
+      if (isCorrect) correct++;
+      result.down[k] = { submitted: submittedDown[k], expected: expected ?? null, correct: isCorrect };
+    }
+
+    const allCorrect = total > 0 && correct === total;
+
+    let playerAnswer = await PlayerAnswers.findOne({
+      name,
+      questionId: crosswordId,
+      round: "roundone",
+    });
+
+    const payload = {
+      name,
+      email,
+      year,
+      questionId: crosswordId,
+      userAnswer: JSON.stringify(answers),
+      isCorrect: allCorrect,
+      round: "roundone",
+      attemptedAt: Date.now(),
+      meta: { total, correct, details: result },
+    };
+
+    if (playerAnswer) {
+      playerAnswer.userAnswer = payload.userAnswer;
+      playerAnswer.isCorrect = payload.isCorrect;
+      playerAnswer.attemptedAt = payload.attemptedAt;
+      playerAnswer.meta = payload.meta;
+      await playerAnswer.save();
+
+      if (allCorrect) {
+        return res.status(200).json({
+          success: true,
+          message: "Correct answer! Congratulations.",
+          data: { questionId: crosswordId, isCorrect: true, total, correct, details: result },
+        });
+      } else {
+        return res.status(200).json({
+          success: true,
+          message: "Submission recorded",
+          data: { questionId: crosswordId, isCorrect: false, total, correct, details: result },
+        });
+      }
+    }
+
+    const newAnswer = new PlayerAnswers(payload);
+    await newAnswer.save();
+
+    if (allCorrect) {
+      return res.status(201).json({
+        success: true,
+        message: "Correct answer! Congratulations.",
+        data: { questionId: crosswordId, isCorrect: true, total, correct, details: result },
+      });
+    } else {
+      return res.status(201).json({
+        success: true,
+        message: "Submission recorded",
+        data: { questionId: crosswordId, isCorrect: false, total, correct, details: result },
+      });
+    }
+  } catch (error) {
+    console.error("submitCrosswordAnswer error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
