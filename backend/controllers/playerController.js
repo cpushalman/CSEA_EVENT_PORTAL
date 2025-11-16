@@ -20,8 +20,11 @@ export const submitAnswer = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid questionId" });
     }
-
-    const question = await Questions.findById(questionId);
+const [q1, q2] = await Promise.all([
+  Questions.findById(questionId),
+  steg.findById(questionId)
+]);
+    const question = q1 || q2
     if (!question) {
       return res.status(404).json({
         success: false,
@@ -189,134 +192,6 @@ export const getPlayerScore = async (req, res) => {
   }
 };
 
-export const submitStegAnswer = async (req, res) => {
-  try {
-    const { questionId, userAnswer } = req.body;
-    const { email, year, name } = req.user;
-
-    if (!questionId || !userAnswer) {
-      return res.status(400).json({
-        success: false,
-        message: "Question ID and answer are required",
-      });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(questionId))
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid questionId" });
-
-    const question = await steg.findById(questionId);
-    if (!question) {
-      return res.status(404).json({
-        success: false,
-        message: "Question not found",
-      });
-    }
-
-    if (Number(question.yr) !== Number(year)) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only answer questions for your year",
-      });
-    }
-
-    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
-    const normalizedCorrectAnswer = question.ans.trim().toLowerCase();
-    const isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
-
-    let playerAnswer = await PlayerAnswers.findOne({
-      name,
-      questionId,
-      round: "roundone",
-    });
-
-    if (playerAnswer) {
-      if (isCorrect && !playerAnswer.isCorrect) {
-        playerAnswer.userAnswer = normalizedUserAnswer;
-        playerAnswer.isCorrect = true;
-        playerAnswer.attemptedAt = Date.now();
-        await playerAnswer.save();
-
-        return res.status(200).json({
-          success: true,
-          message: "Correct answer!",
-          data: {
-            questionId: playerAnswer.questionId,
-            isCorrect: true,
-            message: "Congratulations! Your answer is correct.",
-          },
-        });
-      } else if (playerAnswer.isCorrect) {
-        return res.status(200).json({
-          success: true,
-          message: "Already answered correctly",
-          data: {
-            questionId: playerAnswer.questionId,
-            isCorrect: true,
-          },
-        });
-      } else {
-        playerAnswer.userAnswer = normalizedUserAnswer;
-        playerAnswer.isCorrect = false;
-        playerAnswer.attemptedAt = Date.now();
-        await playerAnswer.save();
-
-        return res.status(200).json({
-          success: true,
-          message: "Incorrect answer",
-          data: {
-            questionId: playerAnswer.questionId,
-            isCorrect: false,
-            message: "Incorrect answer. Try again!",
-          },
-        });
-      }
-    }
-
-    const newAnswer = new PlayerAnswers({
-      name,
-      email,
-      year,
-      questionId,
-      userAnswer: normalizedUserAnswer,
-      isCorrect,
-      round: "roundone",
-    });
-
-    await newAnswer.save();
-
-    if (isCorrect) {
-      return res.status(201).json({
-        success: true,
-        message: "Correct answer!",
-        data: {
-          questionId: newAnswer.questionId,
-          isCorrect: true,
-          message: "Congratulations! Your answer is correct.",
-        },
-      });
-    } else {
-      return res.status(201).json({
-        success: true,
-        message: "Incorrect answer",
-        data: {
-          questionId: newAnswer.questionId,
-          isCorrect: false,
-          message: "Incorrect answer. Try again!",
-        },
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
-
-// ...existing code...
 export const submitCrosswordAnswer = async (req, res) => {
   try {
     const { crosswordId, answers } = req.body;

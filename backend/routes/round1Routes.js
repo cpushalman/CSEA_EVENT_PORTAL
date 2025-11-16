@@ -1,7 +1,7 @@
 import {Router} from "express";
 import authmiddleware from "../middleware/authMiddleware.js";
 import{addqn,getallquestion,getqnbyId,updateqn,getstegqnbyyear,stegqnadd,deleteqn,createCrossword} from "../controllers/roundoneController.js"
-import { submitAnswer, submitStegAnswer, getAnsweredQuestions, getPlayerScore,submitCrosswordAnswer } from "../controllers/playerController.js";
+import { submitAnswer, getAnsweredQuestions, getPlayerScore,submitCrosswordAnswer } from "../controllers/playerController.js";
 
 const router = Router();
 
@@ -17,7 +17,6 @@ router.delete('/delete-qn/:id',deleteqn);
 
 
 router.post('/player/submit-answer', authmiddleware.verifyToken, submitAnswer);
-router.post('/player/submit-steg-answer', authmiddleware.verifyToken, submitStegAnswer);
 router.post('/player/submit-crossword-ans', authmiddleware.verifyToken, submitCrosswordAnswer);
 router.get('/player/answered-questions', authmiddleware.verifyToken, getAnsweredQuestions);
 router.get('/player/score', authmiddleware.verifyToken, getPlayerScore);

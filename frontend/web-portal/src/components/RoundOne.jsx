@@ -100,6 +100,7 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
   const [allQues, setAllQues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
 
   const year = loggedInYear === "1st" ? 1 : 2;
   const { token, logout } = useContext(AuthContext) || {};
@@ -140,7 +141,7 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
           `http://localhost:5000/api/v1/round1/getallquestion/${year}`,
           { signal: controller.signal }
         );
-        console.log(res.data.data)
+        console.log(res.data.data);
 
         if (cancelled) return;
 
@@ -205,24 +206,34 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
   // Roll dice
   const rollDice = () => {
     if (isDiceRolling || expandedCard || isCompleted) return;
+
+    // Get available question IDs (not yet answered)
+    const availableIds = questionsToRender
+      .map((q) => q.id)
+      .filter((id) => !answeredQuestions.has(id));
+
+    if (availableIds.length === 0) {
+      // All questions answered - trigger completion
+      setShowRewardVideo(true);
+      return;
+    }
+
     setIsDiceRolling(true);
     setMouseRotation({ x: 0, y: 0 });
     const rollDuration = 1800;
 
-    const getRandomValue = () => {
-      if (window.crypto && window.crypto.getRandomValues) {
-        const array = new Uint32Array(1);
-        window.crypto.getRandomValues(array);
-        return (array[0] % Math.max(6, allQues.length || 6)) + 1; // ensure at least 6 faces
-      }
-      return Math.floor(Math.random() * 6) + 1;
+    const getRandomFromAvailable = () => {
+      return availableIds[Math.floor(Math.random() * availableIds.length)];
     };
 
-    const rollInterval = setInterval(() => setDiceValue(getRandomValue()), 50);
+    const rollInterval = setInterval(() => {
+      const randomAvailable = getRandomFromAvailable();
+      setDiceValue(randomAvailable);
+    }, 50);
 
     setTimeout(() => {
       clearInterval(rollInterval);
-      const finalValue = getRandomValue();
+      const finalValue = getRandomFromAvailable();
       setDiceValue(finalValue);
       setIsDiceRolling(false);
 
@@ -257,47 +268,49 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
   };
 
   // submit answer
-const handleAnswerSubmit = async (e) => {
-  e.preventDefault();
-  if (!expandedCard || !currentChallenge?._id) return;
+  const handleAnswerSubmit = async (e) => {
+    e.preventDefault();
+    if (!expandedCard || !currentChallenge?._id) return;
 
-  const userAnswer = (answer || "").trim();
-  if (!userAnswer) return setError("Please type an answer");
+    const userAnswer = (answer || "").trim();
+    if (!userAnswer) return setError("Please type an answer");
 
-  try {
-    setError("");
+    try {
+      setError("");
 
-    const res = await axios.post(
-      "http://localhost:5000/api/v1/round1/player/submit-answer",
-      {
-        questionId: currentChallenge._id,
-        userAnswer: userAnswer
+      const res = await axios.post(
+        "http://localhost:5000/api/v1/round1/player/submit-answer",
+        {
+          questionId: currentChallenge._id,
+          userAnswer: userAnswer,
+        }
+      );
+
+      const isCorrect = res?.data?.data?.isCorrect;
+
+      if (isCorrect) {
+        // SUCCESS UI
+        setIsCompleted(true);
+
+        // Mark this question as answered
+        setAnsweredQuestions((prev) => new Set([...prev, currentChallenge.id]));
+
+        // Reset UI for next question
+        setTimeout(() => {
+          setIsCompleted(false);
+          setExpandedCard(null);
+          setAnswer("");
+          setShowDicePopup(true); // Show dice again
+        }, 1000);
+      } else {
+        // WRONG ANSWER UI
+        setError("Incorrect answer. Try again!");
       }
-    );
-
-    const isCorrect = res?.data?.data?.isCorrect;
-
-    if (isCorrect) {
-      // SUCCESS UI
-      setIsCompleted(true);
-
-      // Reset UI for next question
-      setTimeout(() => {
-        setIsCompleted(false);
-        setExpandedCard(null);
-        setAnswer("");
-        setShowDicePopup(true); // Show dice again
-      }, 1000);
-
-    } else {
-      // WRONG ANSWER UI
-      setError("Incorrect answer. Try again!");
+    } catch (err) {
+      console.error(err);
+      setError("Server error. Try again.");
     }
-  } catch (err) {
-    console.error(err);
-    setError("Server error. Try again.");
-  }
-};
+  };
 
   // preview animation trigger
   useEffect(() => {
@@ -565,12 +578,28 @@ const handleAnswerSubmit = async (e) => {
                 style={
                   previewCardId === task.id
                     ? { visibility: "hidden" }
+                    : answeredQuestions.has(task.id)
+                    ? { opacity: 0.3, pointerEvents: "none" }
                     : undefined
                 }
               >
                 <div className="card-front">
                   <div className="card-number">{task.id}</div>
                   <div className="card-title-small">{task.title}</div>
+                  {answeredQuestions.has(task.id) && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        fontSize: "3rem",
+                        color: "#4CAF50",
+                      }}
+                    >
+                      ✓
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
