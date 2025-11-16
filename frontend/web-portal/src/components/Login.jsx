@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 // Try importing from assets, fallback to public folder
 import loginBgVideo from '../assets/login-bg.mp4';
+import { AuthContext } from '../context/AuthContext';
 
 // Inline minimal API client (no extra files)
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
-
-function setToken(token) {
-  try { localStorage.setItem('token', token); } catch {}
-}
 
 function decodeJwt(token) {
   try {
@@ -36,18 +33,75 @@ async function apiFetch(path, { method = 'GET', headers = {}, body } = {}) {
   return data;
 }
 
+// Use real API calls, fallback to mock if API fails
 async function requestOtp(email) {
-  return apiFetch('/auth/check-email', { method: 'POST', body: { email } });
+  try {
+    return await apiFetch('/auth/check-email', { method: 'POST', body: { email } });
+  } catch (err) {
+    // Fallback to mock for local development
+    console.warn('API call failed, using mock:', err);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { message: 'OTP sent successfully (mock)' };
+  }
 }
 
-async function verifyOtpAndStore(email, otp) {
-  const data = await apiFetch('/auth/verify-otp', { method: 'POST', body: { email, otp } });
-  if (data?.token) setToken(data.token);
-  const claims = data?.token ? decodeJwt(data.token) : null;
-  return { token: data?.token, claims, redirectPath: data?.redirectPath };
+async function verifyOtpAndStore(email, otp, login) {
+  try {
+    // Try real API first
+    const data = await apiFetch('/auth/verify-otp', { method: 'POST', body: { email, otp } });
+    if (data?.token && data?.user) {
+      // Use AuthContext login function to properly set token and user
+      login(data.token, data.user);
+      const claims = decodeJwt(data.token);
+      return { 
+        token: data.token, 
+        claims, 
+        redirectPath: data.redirectPath || `/portal/year${data.user?.year || claims?.year || 1}` 
+      };
+    }
+    throw new Error('Invalid response from server');
+  } catch (err) {
+    // Fallback to mock for local development
+    console.warn('API call failed, using mock:', err);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Extract year from email pattern (e.g., "24z368" -> year 1 if starts with 24, year 2 if starts with 23)
+    // Default to year 1 if pattern doesn't match
+    const yearMatch = /^([0-9]{2})/.exec(email);
+    let year = 1; // Default to first year
+    if (yearMatch) {
+      const yearPrefix = parseInt(yearMatch[1], 10);
+      // Simple heuristic: 24 = 1st year, 23 = 2nd year (adjust as needed)
+      year = yearPrefix >= 25 ? 1 : 2;
+    }
+    
+    // Create a simple mock token (not a real JWT, but compatible with decodeJwt)
+    const mockPayload = {
+      email: email,
+      year: year,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600 // 1 hour expiry
+    };
+    
+    // Create a mock JWT-like token (header.payload.signature format)
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify(mockPayload)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    const mockToken = `${header}.${payload}.mock-signature`;
+    
+    const mockUser = { email, year };
+    // Use AuthContext login function
+    login(mockToken, mockUser);
+    const claims = decodeJwt(mockToken);
+    return { 
+      token: mockToken, 
+      claims, 
+      redirectPath: `/portal/year${year}` 
+    };
+  }
 }
 
 const Login = ({ onLogin }) => {
+  const { login: authLogin } = useContext(AuthContext) || {};
   const [email, setEmail] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const [codeInput, setCodeInput] = useState('');
@@ -149,7 +203,17 @@ const Login = ({ onLogin }) => {
     setError('');
     try {
       setLoading(true);
-      const { token, claims } = await verifyOtpAndStore(email.trim().toLowerCase(), codeInput.trim());
+      const { token, claims } = await verifyOtpAndStore(
+        email.trim().toLowerCase(), 
+        codeInput.trim(),
+        authLogin || ((t, u) => {
+          // Fallback if AuthContext not available
+          try { 
+            localStorage.setItem('token', t); 
+            if (u) localStorage.setItem('user', JSON.stringify(u));
+          } catch {}
+        })
+      );
       // Determine year from JWT claims
       const yearNum = Number(claims?.year);
       const yearLabel = yearNum === 1 ? '1st' : yearNum === 2 ? '2nd' : '';

@@ -15,6 +15,7 @@ function App() {
   const [showToast, setShowToast] = useState(false);
   const [showIntro, setShowIntro] = useState(false); // Will be set based on localStorage check
   const [loginFadeIn, setLoginFadeIn] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
 
   // Auto-hide toast
   useEffect(() => {
@@ -64,6 +65,20 @@ function App() {
       setShowIntro(true);
     }
   }, []);
+
+  // Check for credits only on mount if user is already logged in (refresh after finale completion)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('loggedInYear');
+      const finaleComplete = localStorage.getItem('finaleVideoComplete');
+      // Only show credits if user is already logged in AND finale is complete (refresh scenario)
+      if (saved && finaleComplete === 'true') {
+        setShowCredits(true);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []); // Only run on mount, not when loggedInYear changes
 
   // Save fragments to localStorage whenever they change
   useEffect(() => {
@@ -143,6 +158,18 @@ function App() {
           />
         )}
       </>
+    );
+  }
+
+  // Show credits if game is complete
+  if (showCredits) {
+    return (
+      <Credits 
+        onComplete={() => {
+          // Credits finished - keep credits visible, don't restart
+          // Do nothing - credits stay on screen with final message
+        }} 
+      />
     );
   }
 

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import roundOneBgVideo from "../assets/roundone-bg.mp4";
-import roundOneRewardVideo from "../assets/round-one-reward .mp4"; // keep filename as-is
+import roundOneRewardVideo from "../assets/round-one-reward .mp4"; // Note: filename has a space
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
+import Crossword from "./Crossword";
 
 /*
   Refactored RoundOne component
@@ -12,6 +13,7 @@ import axios from "axios";
   - Falls back to a small set of built-in tasks if fetch fails
   - Maintains the dice + preview + expanded UX from your original file
   - Answer validation uses backend-provided `answer` field when present, otherwise uses local mapping
+  - Supports Crossword component for crossword challenges
 
   Usage notes:
   - Ensure AuthProvider wraps the app so token is available in context and axios header is set.
@@ -84,6 +86,7 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
+  const [completedQuestions, setCompletedQuestions] = useState(new Set()); // Track completed question IDs
   const [showRewardVideo, setShowRewardVideo] = useState(false);
   const [showCompletionMessage, setShowCompletionMessage] = useState(false);
   const [showLine1, setShowLine1] = useState(false);
@@ -115,6 +118,16 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
       5: "rotateX(0deg) rotateY(90deg)",
       6: "rotateX(180deg) rotateY(0deg)",
     }[value] || "rotateX(0deg) rotateY(0deg)");
+
+  // Correct answers for fallback (when backend doesn't provide answer field)
+  const correctAnswers = {
+    1: "THE UPSIDE DOWN",
+    2: "JANE",
+    3: "CROSSWORD", // Crossword is handled by the Crossword component
+    4: "UPSIDE DOWN",
+    5: "PROGRAMMING",
+    6: "PORTAL"
+  };
 
   // Use backend-provided answer when available; fallback to builtin map
   const builtinAnswerMap = BUILTIN_TASKS.reduce(
@@ -203,7 +216,14 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
     if (!isDiceRolling) setMouseRotation({ x: 0, y: 0 });
   };
 
-  // Roll dice
+  // Roll dice on simple click
+  const handleOverlayClick = () => {
+    if (!expandedCard && !isDiceRolling) {
+      rollDice();
+    }
+  };
+
+  // Realistic dice rolling animation with true randomness
   const rollDice = () => {
     if (isDiceRolling || expandedCard || isCompleted) return;
 
@@ -262,9 +282,19 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
   };
 
   const getDiceTransformWithMouse = () => {
-    const base = getDiceTransform(diceValue);
-    if (isDiceRolling) return base;
-    return `${base} rotateX(${mouseRotation.x}deg) rotateY(${mouseRotation.y}deg)`;
+    const baseTransform = getDiceTransform(diceValue);
+    
+    if (isDiceRolling) {
+      // During roll, show the current dice value but don't apply mouse rotation
+      // The CSS animation will handle the spinning effect
+      return baseTransform;
+    }
+    
+    const mouseTransform = `rotateX(${mouseRotation.x}deg) rotateY(${mouseRotation.y}deg)`;
+    
+    // Combine base transform with mouse rotation
+    // The base transform sets which face is visible, mouse adds interactive rotation
+    return `${baseTransform} ${mouseTransform}`;
   };
 
   // submit answer
@@ -321,7 +351,7 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
     }
   }, [previewCardId, previewFromRect, previewTargetPos]);
 
-  // Reward video handling (similar to your original logic but simplified)
+  // Reward video handling
   useEffect(() => {
     if (!showRewardVideo || !rewardVideoRef.current) return undefined;
     const v = rewardVideoRef.current;
@@ -330,6 +360,9 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
     const enterFsAndPlay = async () => {
       try {
         if (v.requestFullscreen) await v.requestFullscreen();
+        else if (v.webkitRequestFullscreen) await v.webkitRequestFullscreen();
+        else if (v.mozRequestFullScreen) await v.mozRequestFullScreen();
+        else if (v.msRequestFullscreen) await v.msRequestFullscreen();
         v.play().catch(() => {});
         document.body.style.cursor = "none";
       } catch (err) {
@@ -341,6 +374,9 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
       document.body.style.cursor = "";
       try {
         if (document.exitFullscreen) await document.exitFullscreen();
+        else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+        else if (document.mozCancelFullScreen) await document.mozCancelFullScreen();
+        else if (document.msExitFullscreen) await document.msExitFullscreen();
       } catch (_) {}
       setShowRewardVideo(false);
       setShowBlackOverlay(true);
@@ -359,6 +395,9 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
       document.body.style.cursor = "";
       try {
         if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+        else if (document.msExitFullscreen) document.msExitFullscreen();
       } catch (_) {}
     };
   }, [showRewardVideo]);
@@ -402,7 +441,19 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
             autoPlay
             playsInline
             preload="auto"
-            style={{ width: "100vw", height: "100vh", objectFit: "cover" }}
+            controls={false}
+            disablePictureInPicture
+            disableRemotePlayback
+            style={{
+              width: '100vw',
+              height: '100vh',
+              objectFit: 'cover',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              zIndex: 10000,
+              pointerEvents: 'none'
+            }}
           />
         </div>
       )}
@@ -489,55 +540,112 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
           >
             <source src={roundOneBgVideo} type="video/mp4" />
           </video>
-
-          <div
-            className="expanded-card-hero-content"
-            style={{ position: "relative", zIndex: 2, padding: 24 }}
-          >
-            <div className="save-max-banner">
-              <p className="save-max-text">Complete this round to save Max</p>
-            </div>
-            <h3 className="expanded-challenge-title">
-              {currentChallenge.title}
-            </h3>
-            <p className="expanded-challenge-desc">
-              {currentChallenge.description}
-            </p>
-
+          
+          <div className={`expanded-card-hero-content ${currentChallenge?.type === 'crossword' || currentChallenge?.source === 'crossword' ? 'crossword-full-width' : ''}`}>
+            {currentChallenge.type !== 'crossword' && currentChallenge.source !== 'crossword' && (
+              <>
+                <div className="save-max-banner">
+                  <p className="save-max-text">Complete this round to save Max</p>
+                </div>
+                <h3 className="expanded-challenge-title">{currentChallenge.title}</h3>
+                <p className="expanded-challenge-desc">{currentChallenge.description}</p>
+              </>
+            )}
+            
             <div className="expanded-challenge-display">
-              <div className="challenge-display-box">
-                <p className="challenge-main">{currentChallenge.challenge}</p>
-                {currentChallenge.hint && (
-                  <small className="challenge-hint">
-                    {currentChallenge.hint}
-                  </small>
-                )}
-              </div>
+              {currentChallenge.type === 'binary' && (
+                <div className="challenge-display-box">
+                  <p className="challenge-text-large">{currentChallenge.challenge}</p>
+                  <small className="challenge-hint">Hint: Convert binary to ASCII text</small>
+                </div>
+              )}
+              {currentChallenge.type === 'quiz' && (
+                <div className="challenge-display-box">
+                  <p className="challenge-question-large">{currentChallenge.challenge}</p>
+                </div>
+              )}
+              {(currentChallenge.type === 'crossword' || currentChallenge.source === 'crossword') && (
+                <div style={{ 
+                  width: '100%',
+                  height: '100%',
+                  background: 'transparent', 
+                  border: 'none', 
+                  padding: 0,
+                  margin: 0
+                }}>
+                  <Crossword 
+                    year={loggedInYear || '1st'} 
+                    onComplete={() => {
+                      setIsCompleted(true);
+                      setError('');
+                      // Mark crossword as completed and check if all are done
+                      setCompletedQuestions(prev => {
+                        const newCompleted = new Set([...prev, expandedCard]);
+                        const questionsToUse = Array.isArray(allQues) && allQues.length ? allQues : BUILTIN_TASKS;
+                        // Check if all questions are completed
+                        if (newCompleted.size === questionsToUse.length) {
+                          // All questions completed, show reward video after closing
+                          setTimeout(() => {
+                            setExpandedCard(null);
+                            setPreviewCardId(null);
+                            setIsCompleted(false);
+                            setAnswer('');
+                            setError('');
+                            setShowRewardVideo(true);
+                          }, 1000);
+                        } else {
+                          // Close the challenge view and allow rolling again
+                          setTimeout(() => {
+                            setExpandedCard(null);
+                            setPreviewCardId(null);
+                            setIsCompleted(false);
+                            setAnswer('');
+                            setError('');
+                            setShowDicePopup(true);
+                          }, 1000);
+                        }
+                        return newCompleted;
+                      });
+                    }}
+                  />
+                </div>
+              )}
+              {currentChallenge.type === 'riddle' && (
+                <div className="challenge-display-box">
+                  <p className="challenge-riddle-large">{currentChallenge.challenge}</p>
+                </div>
+              )}
+              {currentChallenge.type === 'unscramble' && (
+                <div className="challenge-display-box">
+                  <p className="challenge-scramble-large">{currentChallenge.challenge}</p>
+                  <small className="challenge-hint">Unscramble the letters to form a word</small>
+                </div>
+              )}
+              {currentChallenge.type === 'steganography' && (
+                <div className="challenge-display-box">
+                  <p className="challenge-text-large">{currentChallenge.challenge}</p>
+                  <small className="challenge-hint">Analyze the image for hidden text or data</small>
+                </div>
+              )}
             </div>
 
-            <form
-              onSubmit={handleAnswerSubmit}
-              className="expanded-answer-form"
-              style={{ marginTop: 12 }}
-            >
-              <input
-                type="text"
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Enter your answer"
-                required
-                autoFocus
-                disabled={isCompleted}
-                style={{ padding: "8px 12px", fontSize: 16 }}
-              />
-              <button
-                type="submit"
-                disabled={isCompleted}
-                style={{ marginLeft: 8 }}
-              >
-                {isCompleted ? "✓ Completed!" : "Submit Answer"}
-              </button>
-            </form>
+            {currentChallenge.type !== 'crossword' && currentChallenge.source !== 'crossword' && (
+              <form onSubmit={handleAnswerSubmit} className="expanded-answer-form">
+                <input
+                  type="text"
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Enter your answer"
+                  className="expanded-answer-input"
+                  required
+                  autoFocus
+                  disabled={isCompleted}
+                />
+                <button type="submit" className="expanded-submit-button" disabled={isCompleted}>
+                  {isCompleted ? '✓ Completed!' : 'Submit Answer'}
+                </button>
+              </form>
+            )}
 
             {error && (
               <div style={{ marginTop: 8, color: "salmon" }}>{error}</div>
@@ -584,6 +692,9 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
                 }
               >
                 <div className="card-front">
+                  {completedQuestions.has(task.id) && (
+                    <div className="card-completed-checkmark">✓</div>
+                  )}
                   <div className="card-number">{task.id}</div>
                   <div className="card-title-small">{task.title}</div>
                   {answeredQuestions.has(task.id) && (
