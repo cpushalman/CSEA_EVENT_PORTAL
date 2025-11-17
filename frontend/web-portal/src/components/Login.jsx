@@ -8,7 +8,7 @@ import { AuthContext } from '../context/AuthContext';
 // Set to false to use mock authentication (no backend required)
 // Set to true to connect to real backend API
 // ============================================================================
-const USE_BACKEND = false; // Change to true when ready to reconnect backend
+const USE_BACKEND = true; // Change to true when ready to reconnect backend
 
 // Inline minimal API client (no extra files)
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
