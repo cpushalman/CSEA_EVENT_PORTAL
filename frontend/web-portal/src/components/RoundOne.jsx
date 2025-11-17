@@ -578,6 +578,10 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
                     onComplete={() => {
                       setIsCompleted(true);
                       setError('');
+                      
+                      // Mark crossword as answered
+                      setAnsweredQuestions((prev) => new Set([...prev, currentChallenge.id]));
+                      
                       // Mark crossword as completed and check if all are done
                       setCompletedQuestions(prev => {
                         const newCompleted = new Set([...prev, expandedCard]);
@@ -615,14 +619,17 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
                   <p className="challenge-riddle-large">{currentChallenge.challenge}</p>
                 </div>
               )}
-              {currentChallenge.type === 'unscramble' && (
+              {(currentChallenge.type === 'unscramble' || currentChallenge.type === 'unscrambled') && (
                 <div className="challenge-display-box">
                   <p className="challenge-scramble-large">{currentChallenge.challenge}</p>
                   <small className="challenge-hint">Unscramble the letters to form a word</small>
                 </div>
               )}
-              {currentChallenge.type === 'steganography' && (
+              {(currentChallenge.type === 'steganography' || currentChallenge.source === 'steg') && (
                 <div className="challenge-display-box">
+                  {currentChallenge.url && (
+                    <img src={currentChallenge.url} alt="Steganography challenge" style={{ maxWidth: '100%', marginBottom: '1rem', borderRadius: '8px' }} />
+                  )}
                   <p className="challenge-text-large">{currentChallenge.challenge}</p>
                   <small className="challenge-hint">Analyze the image for hidden text or data</small>
                 </div>
