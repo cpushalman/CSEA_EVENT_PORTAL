@@ -487,7 +487,7 @@ const VideoIntro = ({ onComplete, onFadeInLogin }) => {
             <div className="thanks-divider-line"></div>
             {thanksScreen === 1 ? (
               <div className="thanks-sponsor thanks-sponsor-psg">
-                <img src={logo} alt="PSG College of Technology logo" className="thanks-logo" />
+                <img src={"https://res.cloudinary.com/drxmhgudx/image/upload/v1763396594/logo_x7mtju.jpg"} alt="PSG College of Technology logo" className="thanks-logo" />
                 <span className="thanks-sponsor-name">PSG College of Technology</span>
               </div>
             ) : thanksScreen === 2 ? (

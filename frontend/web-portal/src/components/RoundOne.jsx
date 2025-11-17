@@ -667,9 +667,14 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
                 <div className="challenge-display-box">
                   {currentChallenge.url && (
                     <img
-                      src={currentChallenge.url}
+                      src={
+                        loggedInYear == "1st"
+                          ? "https://res.cloudinary.com/drxmhgudx/image/upload/v1763400821/WhatsApp_Image_2025-11-14_at_9.08.20_PM_rcz7rq.jpg"
+                          : "https://res.cloudinary.com/drxmhgudx/image/upload/v1763400918/WhatsApp_Image_2025-11-17_at_11.01.30_PM_xc6dse.jpg"
+                      }
                       alt="Steganography challenge"
                       style={{
+                        width: "50%",
                         maxWidth: "100%",
                         marginBottom: "1rem",
                         borderRadius: "8px",
@@ -679,6 +684,13 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
                   <p className="challenge-text-large">
                     {currentChallenge.challenge}
                   </p>
+                  <a
+                    href={loggedInYear=="1st"?"https://drive.google.com/file/d/11tqJX3rxUc_TlwEiPh-h4GCdif8pBmBJ/view?usp=sharing" :"https://drive.google.com/file/d/1K9_QOBeG3k7rX36TDuu2Xe52GG7XDUQ7/view?usp=sharing"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    G Drive link
+                  </a>
                   <small className="challenge-hint">
                     Analyze the image for hidden text or data
                   </small>

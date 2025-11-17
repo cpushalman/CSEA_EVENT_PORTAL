@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import RoundOne from "./components/RoundOne";
 import RoundTwo from "./components/RoundTwo";
-import RoundThree from "./components/RoundThree";
+import JoyceWall from "./components/JoyceWall";
 import Login from "./components/Login";
 // import StrangerThingsIntro from './components/StrangerThingsIntro' // Disabled - using video intro instead
 import VideoIntro from "./components/VideoIntro";
@@ -237,7 +237,8 @@ function App() {
               );
             case 3:
               return (
-                <RoundThree
+                <JoyceWall
+                  triggerWord="ROUND3"
                   fragments={fragments}
                   loggedInYear={loggedInYear}
                   onComplete={() => {

@@ -1,20 +1,28 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import './JoyceWall.css';
-import joyceWallVideo from '../assets/joycewall.mp4';
-import finaleVideo from '../assets/stranger-things-finale.mp4';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import "./JoyceWall.css";
+import joyceWallVideo from "../assets/joycewall.mp4";
+import telepathyVideo from "../assets/telepathy-word.mp4"; // First year video
+// import secondYearVideo from '../assets/second-year-video.mp4'; // Second year video - add this file later
+import finaleVideo from "../assets/stranger-things-finale.mp4";
 // Import background music files (add these audio files to your assets folder)
 // import narrativeMusic from '../assets/narrative-music.mp3';
 // import joyceWallMusic from '../assets/joyce-wall-music.mp3';
 
-export default function JoyceWall({ triggerWord, onComplete, fragments = [], loggedInYear = '1st' }) {
+export default function JoyceWall({
+  triggerWord,
+  onComplete,
+  fragments = [],
+  loggedInYear = "1st",
+}) {
   const [showJumbledMessage, setShowJumbledMessage] = useState(false);
   const [showJoyceWallVideo, setShowJoyceWallVideo] = useState(false);
   const [showFinaleVideo, setShowFinaleVideo] = useState(false);
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [showJoyceWallMessage, setShowJoyceWallMessage] = useState(false);
   const [showClues, setShowClues] = useState(false);
-  const [password, setPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [showCluesInPassword, setShowCluesInPassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoPaused, setVideoPaused] = useState(false);
   const [joyceWallVideoComplete, setJoyceWallVideoComplete] = useState(false);
@@ -25,12 +33,11 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
   const finaleVideoContainerRef = useRef(null);
   const narrativeMusicRef = useRef(null);
   const joyceWallMusicRef = useRef(null);
-  
+
   // Calculate correct password from fragments
-  const correctPassword = fragments.length > 0 
-    ? fragments.join('').toUpperCase() 
-    : 'UPSIDE DOWN';
-  
+  const correctPassword =
+    fragments.length > 0 ? fragments.join("").toUpperCase() : "UPSIDE DOWN";
+
   // Time to pause finale video (when Eleven starts using power) - adjust this value
   const PAUSE_TIME = 8; // seconds - adjust based on your video
 
@@ -42,21 +49,25 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
     "4. A lone number stands exactly as it is. Do not alter it.",
     "5. From the creature that lurks between the two worlds, whose name begins with dread, take its opening three-letter fragment and write it in ALL CAPS.",
     "6. The power that moves objects. Take the first and last letters and write both in uppercase.",
-    "7. Finish with a sharp symbol: add #."
+    "7. Finish with a sharp symbol: add #.",
   ];
 
   // Clues for second year
   const secondYearClues = [
-    "1. A beast born from Hawkins Lab hides a faithful pet within its very name. Take that pet, change it to CAPS , flip it backwards, and replace every \"o\" in it with 0.",
+    '1. A beast born from Hawkins Lab hides a faithful pet within its very name. Take that pet, change it to CAPS , flip it backwards, and replace every "o" in it with 0.',
     "2. When all lights go out, one word describes that world. From that word, take the last three letters and enter them backwards, all in lowercase.",
     "3. She is a well-known goddess of power and destruction in India. Use the first two letters of her name in ALL CAPS.",
     "4. The mind's silent force begins and ends boldly. Take the first and last letters of the word and write both in uppercase.",
     "5. A timeless proverb about friends. Count the number of words in it and use that number.",
     "6. The boy who changed Hawkins forever left behind a surname of five letters. Replace every vowel with ! and write the result in ALL CAPS.",
-    "7. Every coded message needs its closure. End yours with the mark that glints like a sharpened hook: $."
+    "7. Every coded message needs its closure. End yours with the mark that glints like a sharpened hook: $.",
   ];
 
-  const clues = loggedInYear === '1st' ? firstYearClues : secondYearClues;
+  const clues = loggedInYear === "1st" ? firstYearClues : secondYearClues;
+
+  // Select video based on logged in year
+  const selectedJoyceWallVideo =
+    loggedInYear === "1st" ? "https://res.cloudinary.com/drxmhgudx/video/upload/v1763396452/telepathy-word_abfoyv.mp4" : "https://res.cloudinary.com/drxmhgudx/video/upload/v1763400483/WhatsApp_Video_2025-11-17_at_10.56.28_PM_cg3bm7.mp4"; // Use joyceWallVideo as placeholder until second year video is added
 
   const [canContinue, setCanContinue] = useState(false);
 
@@ -68,8 +79,8 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
       if (narrativeMusicRef.current) {
         narrativeMusicRef.current.volume = 0.5; // Set volume (0.0 to 1.0)
         narrativeMusicRef.current.loop = true; // Loop the music
-        narrativeMusicRef.current.play().catch(error => {
-          console.error('Error playing narrative music:', error);
+        narrativeMusicRef.current.play().catch((error) => {
+          console.error("Error playing narrative music:", error);
         });
       }
       // Enable continue button after a short delay (give time to read)
@@ -95,8 +106,8 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
       if (joyceWallMusicRef.current) {
         joyceWallMusicRef.current.volume = 0.5; // Set volume (0.0 to 1.0)
         joyceWallMusicRef.current.loop = true; // Loop the music
-        joyceWallMusicRef.current.play().catch(error => {
-          console.error('Error playing Joyce wall music:', error);
+        joyceWallMusicRef.current.play().catch((error) => {
+          console.error("Error playing Joyce wall music:", error);
         });
       }
     }
@@ -155,7 +166,7 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
         setIsPlaying(true);
         await joyceWallVideoRef.current.play();
       } catch (error) {
-        console.error('Error playing JoyceWall video:', error);
+        console.error("Error playing JoyceWall video:", error);
         setIsPlaying(false);
       }
     }
@@ -175,10 +186,10 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
     if (finaleVideoRef.current && finaleVideoContainerRef.current) {
       const video = finaleVideoRef.current;
       const container = finaleVideoContainerRef.current;
-      
+
       // Ensure video starts from the beginning
       video.currentTime = 0;
-      
+
       // Enter fullscreen on CONTAINER (not video) so password overlay is included
       const enterFullscreen = async () => {
         try {
@@ -194,17 +205,21 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
           }
           setIsFullscreen(true);
         } catch (err) {
-          console.log('Fullscreen error:', err);
+          console.log("Fullscreen error:", err);
         }
         // Hide cursor on body, video, and fullscreen element
-        document.body.style.cursor = 'none';
-        video.style.cursor = 'none';
-        const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        document.body.style.cursor = "none";
+        video.style.cursor = "none";
+        const fsEl =
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement;
         if (fsEl) {
-          fsEl.style.cursor = 'none';
+          fsEl.style.cursor = "none";
         }
       };
-      
+
       try {
         await enterFullscreen();
         setIsPlaying(true);
@@ -212,11 +227,11 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
         // Ensure password input is reset when starting video
         setShowPasswordInput(false);
         // Hide cursor immediately when video starts
-        document.body.style.cursor = 'none';
-        video.style.cursor = 'none';
+        document.body.style.cursor = "none";
+        video.style.cursor = "none";
         await video.play();
       } catch (error) {
-        console.error('Error playing finale video:', error);
+        console.error("Error playing finale video:", error);
         setIsPlaying(false);
       }
     }
@@ -225,8 +240,8 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
   // Check if password was already cracked on mount
   useEffect(() => {
     try {
-      const alreadyCracked = localStorage.getItem('round3PasswordCracked');
-      if (alreadyCracked === 'true') {
+      const alreadyCracked = localStorage.getItem("round3PasswordCracked");
+      if (alreadyCracked === "true") {
         // Password already cracked - don't show password input, just play video
         setShowPasswordInput(false);
       }
@@ -239,16 +254,21 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
   const handleFinaleTimeUpdate = useCallback(() => {
     // Check if password was already cracked - if so, don't pause
     try {
-      const alreadyCracked = localStorage.getItem('round3PasswordCracked');
-      if (alreadyCracked === 'true') {
+      const alreadyCracked = localStorage.getItem("round3PasswordCracked");
+      if (alreadyCracked === "true") {
         // Password already cracked - let video continue playing
         return;
       }
     } catch (e) {
       // ignore
     }
-    
-    if (finaleVideoRef.current && finaleVideoRef.current.currentTime >= PAUSE_TIME && !videoPaused && !showPasswordInput) {
+
+    if (
+      finaleVideoRef.current &&
+      finaleVideoRef.current.currentTime >= PAUSE_TIME &&
+      !videoPaused &&
+      !showPasswordInput
+    ) {
       finaleVideoRef.current.pause();
       setVideoPaused(true);
       setIsPlaying(false);
@@ -260,28 +280,33 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
   const handleFinaleVideoEnd = async () => {
     // Start fade-out transition
     setFinaleVideoFading(true);
-    
+
     // Immediately stop and pause the video
     if (finaleVideoRef.current) {
       finaleVideoRef.current.pause();
       finaleVideoRef.current.currentTime = finaleVideoRef.current.duration; // Ensure it's at the end
       setIsPlaying(false);
     }
-    
+
     // Mark finale video as complete in localStorage so refresh shows credits
     try {
-      localStorage.setItem('finaleVideoComplete', 'true');
-      localStorage.setItem('gameComplete', 'true');
+      localStorage.setItem("finaleVideoComplete", "true");
+      localStorage.setItem("gameComplete", "true");
     } catch (e) {
       // ignore
     }
-    
+
     // Restore cursor and exit fullscreen after fade starts
     setTimeout(async () => {
-      document.body.style.cursor = '';
+      document.body.style.cursor = "";
       const exitFullscreenSafe = async () => {
         try {
-          if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+          if (
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+          ) {
             if (document.exitFullscreen) {
               await document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
@@ -293,14 +318,14 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
             }
           }
         } catch (err) {
-          console.log('Exit fullscreen error:', err);
+          console.log("Exit fullscreen error:", err);
         }
       };
-      
+
       await exitFullscreenSafe();
       setIsFullscreen(false);
     }, 500);
-    
+
     // Call onComplete to show credits after fade-out completes
     setTimeout(() => {
       if (onComplete) {
@@ -340,49 +365,66 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
   // Handle fullscreen change events for finale video
   useEffect(() => {
     if (!showFinaleVideo) return;
-    
+
     const onFullscreenChange = () => {
-      const active = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+      const active = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
       setIsFullscreen(active);
-      
+
       // Ensure cursor stays hidden when in fullscreen
       if (active) {
-        document.body.style.cursor = 'none';
+        document.body.style.cursor = "none";
         if (finaleVideoRef.current) {
-          finaleVideoRef.current.style.cursor = 'none';
+          finaleVideoRef.current.style.cursor = "none";
         }
-        const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        const fsEl =
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement;
         if (fsEl) {
-          fsEl.style.cursor = 'none';
+          fsEl.style.cursor = "none";
         }
       }
     };
-    
-    document.addEventListener('fullscreenchange', onFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-    document.addEventListener('mozfullscreenchange', onFullscreenChange);
-    document.addEventListener('MSFullscreenChange', onFullscreenChange);
-    
+
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+    document.addEventListener("mozfullscreenchange", onFullscreenChange);
+    document.addEventListener("MSFullscreenChange", onFullscreenChange);
+
     return () => {
-      document.removeEventListener('fullscreenchange', onFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', onFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', onFullscreenChange);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        onFullscreenChange
+      );
+      document.removeEventListener("mozfullscreenchange", onFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", onFullscreenChange);
     };
   }, [showFinaleVideo]);
 
   // Cleanup finale video: restore cursor and exit fullscreen
   useEffect(() => {
     if (!showFinaleVideo) return;
-    
+
     return () => {
       // Restore cursor
-      document.body.style.cursor = '';
-      
+      document.body.style.cursor = "";
+
       // Exit fullscreen
       const exitFullscreenSafe = async () => {
         try {
-          if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+          if (
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+          ) {
             if (document.exitFullscreen) {
               await document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
@@ -402,31 +444,55 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
   }, [showFinaleVideo]);
 
   // Handle password submit
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    setPasswordError('');
-    
-    const userPassword = password.trim().toUpperCase();
-    const expected = correctPassword.toUpperCase();
-    
-    if (userPassword === expected || userPassword === 'UPSIDE DOWN') {
-      // Correct password - save to localStorage and resume finale video
-      try {
-        localStorage.setItem('round3PasswordCracked', 'true');
-      } catch (e) {
-        // ignore
+    setPasswordError("");
+
+    const userPassword = password.trim();
+
+    try {
+      // Get year and token from localStorage
+      const year = loggedInYear === "1st" ? 1 : 2;
+      const token = localStorage.getItem("token");
+
+      // Make POST request to backend
+      const response = await fetch("http://localhost:5000/api/v1/round3/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          year: year,
+          answer: userPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.isCorrect) {
+        // Correct password - save to localStorage and resume finale video
+        try {
+          localStorage.setItem("round3PasswordCracked", "true");
+        } catch (e) {
+          // ignore
+        }
+        setShowPasswordInput(false);
+        setVideoPaused(false);
+        if (finaleVideoRef.current) {
+          // Ensure cursor is hidden when resuming video
+          document.body.style.cursor = "none";
+          finaleVideoRef.current.play();
+          setIsPlaying(true);
+        }
+      } else {
+        setPasswordError(data.message || "Incorrect password. Try again!");
+        setPassword("");
       }
-      setShowPasswordInput(false);
-      setVideoPaused(false);
-      if (finaleVideoRef.current) {
-        // Ensure cursor is hidden when resuming video
-        document.body.style.cursor = 'none';
-        finaleVideoRef.current.play();
-        setIsPlaying(true);
-      }
-    } else {
-      setPasswordError('Incorrect password. Try again!');
-      setPassword('');
+    } catch (error) {
+      console.error("Error submitting password:", error);
+      setPasswordError("Error submitting answer. Please try again.");
+      setPassword("");
     }
   };
 
@@ -450,10 +516,15 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
         joyceWallMusicRef.current.currentTime = 0;
       }
       // Restore cursor and exit fullscreen on unmount
-      document.body.style.cursor = '';
+      document.body.style.cursor = "";
       const exitFullscreenSafe = async () => {
         try {
-          if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+          if (
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+          ) {
             if (document.exitFullscreen) {
               await document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
@@ -480,7 +551,7 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
         ref={narrativeMusicRef}
         preload="auto"
         loop
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
       >
         {/* Once you add narrative-music.mp3 to assets folder, uncomment the import and this source tag */}
         {/* <source src={narrativeMusic} type="audio/mpeg" /> */}
@@ -492,7 +563,7 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
         ref={joyceWallMusicRef}
         preload="auto"
         loop
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
       >
         {/* Once you add joyce-wall-music.mp3 to assets folder, uncomment the import and this source tag */}
         {/* <source src={joyceWallMusic} type="audio/mpeg" /> */}
@@ -505,12 +576,22 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
           <div className="jumbled-message-content">
             <div className="narrative-title">MESSAGE FROM THE UPSIDE DOWN</div>
             <div className="narrative-text">
-              <p>A message has emerged from the Upside Down—scrambled and distorted by the dimensional rift between worlds.</p>
-              <p>This message contains vital information that will help Eleven close the gate and seal the portal once and for all.</p>
-              <p>Watch carefully as the transmission reveals itself. Use the knowledge you've gathered to assist Eleven in her final stand against the darkness.</p>
+              <p>
+                A message has emerged from the Upside Down—scrambled and
+                distorted by the dimensional rift between worlds.
+              </p>
+              <p>
+                This message contains vital information that will help Eleven
+                close the gate and seal the portal once and for all.
+              </p>
+              <p>
+                Watch carefully as the transmission reveals itself. Use the
+                knowledge you've gathered to assist Eleven in her final stand
+                against the darkness.
+              </p>
             </div>
             {canContinue && (
-              <button 
+              <button
                 onClick={handleContinueToJoyceWall}
                 className="tap-to-continue-button"
               >
@@ -524,9 +605,9 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
       {/* Phase 1: JoyceWall Video */}
       {showJoyceWallVideo && (
         <>
-          <video 
+          <video
             ref={joyceWallVideoRef}
-            src={joyceWallVideo}
+            src={selectedJoyceWallVideo}
             className="joyce-wall-video"
             onLoadedMetadata={handleJoyceWallVideoLoaded}
             onEnded={handleJoyceWallVideoEnd}
@@ -536,7 +617,7 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
             preload="auto"
             muted={false}
           />
-          
+
           {/* Message Received after JoyceWall video */}
           {showJoyceWallMessage && (
             <div className="message-received">
@@ -546,7 +627,7 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
 
           {/* Control Buttons for JoyceWall Video */}
           <div className="joyce-wall-controls">
-            <button 
+            <button
               onClick={handleReplayJoyceWall}
               className="replay-button"
               disabled={isPlaying}
@@ -555,7 +636,7 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
               <span className="button-text">REPLAY</span>
             </button>
             {showJoyceWallMessage && joyceWallVideoComplete && (
-              <button 
+              <button
                 onClick={handleContinueToFinale}
                 className="continue-button"
               >
@@ -569,11 +650,13 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
 
       {/* Phase 2: Finale Video */}
       {showFinaleVideo && (
-        <div 
-          ref={finaleVideoContainerRef} 
-          className={`finale-video-container ${finaleVideoFading ? 'fading-out' : ''}`}
+        <div
+          ref={finaleVideoContainerRef}
+          className={`finale-video-container ${
+            finaleVideoFading ? "fading-out" : ""
+          }`}
         >
-          <video 
+          <video
             ref={finaleVideoRef}
             src={finaleVideo}
             className="joyce-wall-video finale-video"
@@ -583,27 +666,40 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
             onPlay={() => {
               setIsPlaying(true);
               // Hide cursor when video plays - target body, video, and fullscreen element
-              document.body.style.cursor = 'none';
+              document.body.style.cursor = "none";
               if (finaleVideoRef.current) {
-                finaleVideoRef.current.style.cursor = 'none';
+                finaleVideoRef.current.style.cursor = "none";
               }
-              const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+              const fsEl =
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement;
               if (fsEl) {
-                fsEl.style.cursor = 'none';
+                fsEl.style.cursor = "none";
               }
             }}
             onPause={() => {
               setIsPlaying(false);
               // Keep cursor hidden in fullscreen even when paused
-              const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+              const isFs = !!(
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement
+              );
               if (isFs) {
-                document.body.style.cursor = 'none';
+                document.body.style.cursor = "none";
                 if (finaleVideoRef.current) {
-                  finaleVideoRef.current.style.cursor = 'none';
+                  finaleVideoRef.current.style.cursor = "none";
                 }
-                const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                const fsEl =
+                  document.fullscreenElement ||
+                  document.webkitFullscreenElement ||
+                  document.mozFullScreenElement ||
+                  document.msFullscreenElement;
                 if (fsEl) {
-                  fsEl.style.cursor = 'none';
+                  fsEl.style.cursor = "none";
                 }
               }
             }}
@@ -617,29 +713,146 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
               }
             }}
             style={{
-              width: '100vw',
-              height: '100vh',
-              objectFit: 'cover',
-              position: 'fixed',
+              width: "100vw",
+              height: "100vh",
+              objectFit: "cover",
+              position: "fixed",
               top: 0,
               left: 0,
               zIndex: 10000,
-              pointerEvents: 'none',
-              cursor: 'none'
+              pointerEvents: "none",
+              cursor: "none",
             }}
           />
-          
+
           {/* Password Input Overlay - INSIDE the fullscreen container */}
           {showPasswordInput && (
             <div className="password-overlay">
+              {/* Show Clues Button - Top Left */}
+              <button
+                type="button"
+                onClick={() => setShowCluesInPassword(true)}
+                style={{
+                  position: "absolute",
+                  top: "2rem",
+                  left: "2rem",
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.9rem",
+                  backgroundColor: "#E6194B",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  zIndex: 10001,
+                  textTransform: "uppercase",
+                  fontWeight: "bold",
+                  letterSpacing: "1px",
+                  boxShadow: "0 0 15px rgba(230, 25, 75, 0.5)",
+                }}
+              >
+                👁️ Show Clues
+              </button>
+
+              {/* Clues Overlay inside password input */}
+              {showCluesInPassword && (
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    backgroundColor: "rgba(0, 0, 0, 0.98)",
+                    zIndex: 10002,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: "2rem",
+                    overflowY: "auto",
+                  }}
+                >
+                  <div
+                    style={{
+                      maxWidth: "800px",
+                      width: "100%",
+                      color: "#E6194B",
+                    }}
+                  >
+                    <h2
+                      style={{
+                        fontSize: "2rem",
+                        marginBottom: "2rem",
+                        textAlign: "center",
+                        color: "#E6194B",
+                        textShadow: "0 0 10px #E6194B",
+                        textTransform: "uppercase",
+                        letterSpacing: "3px",
+                      }}
+                    >
+                      THE PORTAL CLUES
+                    </h2>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "1rem",
+                      }}
+                    >
+                      {clues.map((clue, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            padding: "1rem",
+                            backgroundColor: "rgba(230, 25, 75, 0.1)",
+                            border: "1px solid #E6194B",
+                            borderRadius: "4px",
+                            fontSize: "1rem",
+                            lineHeight: "1.6",
+                          }}
+                        >
+                          {clue}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowCluesInPassword(false)}
+                    style={{
+                      marginTop: "2rem",
+                      padding: "1rem 2rem",
+                      fontSize: "1.2rem",
+                      backgroundColor: "#E6194B",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      textTransform: "uppercase",
+                      fontWeight: "bold",
+                      letterSpacing: "2px",
+                      boxShadow: "0 0 20px rgba(230, 25, 75, 0.5)",
+                    }}
+                  >
+                    CLOSE
+                  </button>
+                </div>
+              )}
+
               <div className="password-overlay-content">
                 <div className="password-title-section">
-                  <div className="password-round-label">ROUND 3: THE FINAL SEAL</div>
+                  <div className="password-round-label">
+                    ROUND 3: THE FINAL SEAL
+                  </div>
                   <h2 className="password-title">ELEVEN NEEDS YOUR HELP</h2>
-                  <p className="password-subtitle">ENTER THE PASSWORD TO CLOSE THE GATE</p>
+                  <p className="password-subtitle">
+                    ENTER THE PASSWORD TO CLOSE THE GATE
+                  </p>
                 </div>
-                
-                <form onSubmit={handlePasswordSubmit} className="password-form-overlay">
+
+                <form
+                  onSubmit={handlePasswordSubmit}
+                  className="password-form-overlay"
+                >
                   <div className="password-input-wrapper">
                     <input
                       type="text"
@@ -655,7 +868,7 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
                       <div className="password-error">{passwordError}</div>
                     )}
                   </div>
-                  
+
                   <button type="submit" className="password-submit-button">
                     <span className="button-text">SEAL THE GATE</span>
                     <span className="button-icon">🔒</span>
@@ -664,7 +877,6 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
               </div>
             </div>
           )}
-
         </div>
       )}
 
@@ -681,7 +893,7 @@ export default function JoyceWall({ triggerWord, onComplete, fragments = [], log
               ))}
             </div>
           </div>
-          <button 
+          <button
             onClick={handleContinueFromClues}
             className="clue-tap-to-continue"
           >

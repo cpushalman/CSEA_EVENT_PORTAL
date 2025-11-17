@@ -34,11 +34,11 @@ const RoundThree = ({ fragments = [], loggedInYear = "1st" }) => {
   // Combine all fragments to form the final password
   // In a real implementation, this would be encrypted/encoded
   const correctPassword =
-    fragments.length > 0 ? fragments.join("").toUpperCase() : "UPSIDE DOWN"; // Fallback password for testing if no fragments
+    fragments.length > 0 ? fragments.join("").toUpperCase() : "UPSIDE "; // Fallback password for testing if no fragments
 
   useEffect(() => {
     // If fragments are passed, they're already available
-    // Otherwise, try to get from localStorage
+    // Otherwise, try to get from localStorage  
     if (fragments.length === 0) {
       try {
         const saved = localStorage.getItem("passwordFragments");

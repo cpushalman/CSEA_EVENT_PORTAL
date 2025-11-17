@@ -39,158 +39,301 @@ const RoundTwo = ({
   // ---------- PUZZLE DATA (with testcases) ----------
 
   const pythonPuzzles = [
-    {
-      id: 1,
-      language: "Python",
-      code: `def find_portal(n):
-    portl = []
-    for i in range(n):
-        if i % 2 == 0:
-            portal.append(i)
-    return portal`,
-      fixedCode: `def find_portal(n):
-    portal = []
-    for i in range(n):
-        if i % 2 == 0:
-            portal.append(i)
-    return portal`,
-      hint: "Fix the variable name typos",
-      fragment: "FRAGMENT1",
-      testcases: {
-        visible: [
-          { input: "6", expectedOutput: "[0, 2, 4]" },
-          { input: "1", expectedOutput: "[0]" },
-        ],
-        hidden: [
-          { input: "3", expectedOutput: "[0, 2]" },
-          { input: "0", expectedOutput: "[]" },
-          { input: "7", expectedOutput: "[0, 2, 4, 6]" },
-        ],
-      },
-    },
-
-    {
-      id: 2,
-      language: "Python",
-      code: `def count_dimensions(arr):
+  // --------------------------------------------------------
+  // PUZZLE 1 — COUNT VOWELS
+  // --------------------------------------------------------
+  {
+    id: 1,
+    language: "Python",
+    code: String.raw`def count_vowels(text)
+    vowels = "aeiouAEIOU"
     count = 0
-    for x in arr:
-        if x > 0
-            count += 1
-    return count`,
-      fixedCode: `def count_dimensions(arr):
+    vowel_list = []
+
+    for ch in txt:       
+    if ch in vowels     
+        count = count + 1
+        vowel_list.append(ch)
+
+    result = 
+        "input_string": text,     
+        "total_vowels": count,
+        "vowels_found": vowel_list
+    }
+
+    return results      
+
+user_text = input("Enter a string: ")
+output = count_vowel(user_text)   
+print("Input String :", output["inputstring"])  
+print("Vowel Count  :", output["total_vowels"])
+print("Vowels Found :", output["vowel_found"])`,
+    
+    fixedCode: String.raw`def count_vowels(text):
+    vowels = "aeiouAEIOU"
     count = 0
-    for x in arr:
-        if x > 0:
+    vowel_list = []
+
+    for ch in text:
+        if ch in vowels:
             count += 1
-    return count`,
-      hint: "Missing colon",
-      fragment: "FRAGMENT2",
-      testcases: {
-        visible: [
-          { input: "[1, -1, 5]", expectedOutput: "2" },
-          { input: "[]", expectedOutput: "0" },
-        ],
-        hidden: [
-          { input: "[-5,5]", expectedOutput: "1" },
-          { input: "[10,20,30]", expectedOutput: "3" },
-          { input: "[-1,-2,-3]", expectedOutput: "0" },
-        ],
-      },
-    },
+            vowel_list.append(ch)
 
-    {
-      id: 3,
-      language: "Python",
-      code: `def reverse_string(s):
-    result = ""
-    for i in range(len(s)):
-        result = result + s[i]
-    return result`,
-      fixedCode: `def reverse_string(s):
-    result = ""
-    for i in range(len(s)):
-        result = s[i] + result
-    return result`,
-      hint: "Fix string concatenation order",
-      fragment: "FRAGMENT3",
-      testcases: {
-        visible: [
-          { input: '"abc"', expectedOutput: '"cba"' },
-          { input: '""', expectedOutput: '""' },
-        ],
-        hidden: [
-          { input: '"a"', expectedOutput: '"a"' },
-          { input: '"st"', expectedOutput: '"ts"' },
-          { input: '"hello"', expectedOutput: '"olleh"' },
-        ],
-      },
-    },
+    result = {
+        "input_string": text,
+        "total_vowels": count,
+        "vowels_found": vowel_list
+    }
+    return result
 
-    {
-      id: 4,
-      language: "Python",
-      code: `def is_prime(n):
-    if n < 2:
-        return False
-    for i in range(2, n):
-        if n % i == 0:
-            return True
-    return False`,
-      fixedCode: `def is_prime(n):
-    if n < 2:
-        return False
-    for i in range(2, n):
-        if n % i == 0:
-            return False
-    return True`,
-      hint: "Fix return inside loop",
-      fragment: "FRAGMENT4",
-      testcases: {
-        visible: [
-          { input: "7", expectedOutput: "True" },
-          { input: "4", expectedOutput: "False" },
-        ],
-        hidden: [
-          { input: "2", expectedOutput: "True" },
-          { input: "1", expectedOutput: "False" },
-          { input: "11", expectedOutput: "True" },
-        ],
-      },
-    },
+user_text = input()
+output = count_vowels(user_text)
+print("Vowel Count =", output["total_vowels"])`,
 
-    {
-      id: 5,
-      language: "Python",
-      code: `def factorial(n):
-    if n == 0:
-        return 0
-    result = 1
-    for i in range(1, n):
-        result *= i
-    return result`,
-      fixedCode: `def factorial(n):
-    if n == 0:
-        return 1
-    result = 1
-    for i in range(1, n+1):
-        result *= i
-    return result`,
-      hint: "Fix loop range & base case",
-      fragment: "FRAGMENT5",
-      testcases: {
-        visible: [
-          { input: "5", expectedOutput: "120" },
-          { input: "0", expectedOutput: "1" },
-        ],
-        hidden: [
-          { input: "1", expectedOutput: "1" },
-          { input: "4", expectedOutput: "24" },
-          { input: "3", expectedOutput: "6" },
-        ],
-      },
-    },
-  ];
+    hint: "Fix function name, indentation, variables, and dictionary syntax",
+    fragment: "FRAGMENT1",
+    testcases: {
+      visible: [
+        { input: "apple", expectedOutput: "Vowel Count = 2" },
+        { input: "HELLO", expectedOutput: "Vowel Count = 2" }
+      ],
+      hidden: [
+        { input: "python", expectedOutput: "Vowel Count = 1" },
+        { input: "computer", expectedOutput: "Vowel Count = 3" },
+        { input: "STRANGER THINGS", expectedOutput: "Vowel Count = 3" }
+      ]
+    }
+  },
+
+  // --------------------------------------------------------
+  // PUZZLE 2 — REVERSE STRING
+  // --------------------------------------------------------
+  {
+    id: 2,
+    language: "Python",
+    code: String.raw`def reverse_string(text)            
+    reversed_text = ''
+
+    idx = len(txt) - 1           
+    while idx > 0:                 
+        reversed_text += text[idx]
+        idx -= 1
+
+    result =                      
+        "original": text,
+        "reversed": reversed_text
+    }                              
+    return reslts                  
+
+user_input = input("Enter a string: ")
+out = reverseStr(user_input)   
+print("Original :", out["orig"])  
+print("Reversed :", out["reversed"])`,
+
+    fixedCode: String.raw`def reverse_string(text):
+    reversed_text = ""
+    index = len(text) - 1
+    while index >= 0:
+        reversed_text += text[index]
+        index -= 1
+
+    result = {
+        "original": text,
+        "reversed": reversed_text
+    }
+    return result
+
+user_text = input()
+output = reverse_string(user_text)
+print("Reversed :", output["reversed"])`,
+
+    hint: "Fix variable names, index range, missing braces, and return",
+    fragment: "FRAGMENT2",
+    testcases: {
+      visible: [
+        { input: "hello", expectedOutput: "olleh" },
+        { input: "A", expectedOutput: "A" }
+      ],
+      hidden: [
+        { input: "12345", expectedOutput: "54321" },
+        { input: "Python Program", expectedOutput: "margorP nohtyP" },
+        { input: "racecar", expectedOutput: "racecar" }
+      ]
+    }
+  },
+
+  // --------------------------------------------------------
+  // PUZZLE 3 — DIGIT SUM
+  // --------------------------------------------------------
+  {
+    id: 3,
+    language: "Python",
+    code: String.raw`def digit_sum(num)                
+    total = 0
+    temp = n                       
+
+    while temp >= 0:               
+        digit = temp % 10
+        total =+ digit             
+        temp = temp / 10           
+
+    result =                   
+        "number": num,
+        "sum_of_digits": total
+
+    return res                    
+
+number = int(input("Enter a number: "))
+output = digit_sum(number)
+print("Number:", output["number"])
+print("Digit Sum:", output["sum_of_digits"])`,
+
+    fixedCode: String.raw`def digit_sum(num):
+    total = 0
+    temp = num
+
+    while temp > 0:
+        digit = temp % 10
+        total += digit
+        temp //= 10
+
+    result = {
+        "number": num,
+        "sum_of_digits": total
+    }
+    return result
+
+number = int(input())
+output = digit_sum(number)
+print("Sum =", output["sum_of_digits"])`,
+
+    hint: "Fix temp variable, loop condition, += operator, dict syntax",
+    fragment: "FRAGMENT3",
+    testcases: {
+      visible: [
+        { input: "123", expectedOutput: "Sum = 6" },
+        { input: "789", expectedOutput: "Sum = 24" }
+      ],
+      hidden: [
+        { input: "5", expectedOutput: "Sum = 5" },
+        { input: "1005", expectedOutput: "Sum = 6" },
+        { input: "2024", expectedOutput: "Sum = 8" }
+      ]
+    }
+  },
+
+  // --------------------------------------------------------
+  // PUZZLE 4 — COUNT WORDS
+  // --------------------------------------------------------
+  {
+    id: 4,
+    language: "Python",
+    code: String.raw`def count_words(sentence)           
+    words = sent.split()            
+    total = len(word)                
+    result =                        
+        "sentence": sentence,
+        "word_count": total,
+        "words": words
+    }                              
+    return results                   
+
+s = input("Enter a sentence: ")
+output = countwords(s)           
+print("Sentence :", output['sentence'])
+print("Word Count:", output['word_count'])
+print("Words:", output['word'])`,
+
+    fixedCode: String.raw`def count_words(sentence):
+    words = sentence.split()
+    total = len(words)
+
+    result = {
+        "sentence": sentence,
+        "word_count": total,
+        "words": words
+    }
+    return result
+
+sen = input()
+output = count_words(sen)
+print("Word Count:", output["word_count"])
+print("Words:", output["words"])`,
+
+    hint: "Fix wrong variable names, dict syntax, function name",
+    fragment: "FRAGMENT4",
+    testcases: {
+      visible: [
+        { input: "hello world", expectedOutput: "2" },
+        { input: "Python is amazing", expectedOutput: "3" }
+      ],
+      hidden: [
+        { input: "I", expectedOutput: "1" },
+        { input: "ChatGPT helps me learn programming", expectedOutput: "5" },
+        { input: "Welcome to PSG Tech", expectedOutput: "4" }
+      ]
+    }
+  },
+
+  // --------------------------------------------------------
+  // PUZZLE 5 — FIND LARGEST NUMBER
+  // --------------------------------------------------------
+  {
+    id: 5,
+    language: "Python",
+    code: String.raw`def find_largest(numbers)            
+    largest = numbers                
+
+    for n in number:                 
+        if n < largest:              
+            largest = n
+
+    result =                        
+        "numbers": numbers,
+        "largest": largest
+    }                                
+
+    return lasts                     
+
+text = input("Enter numbers: ")
+num_list = [int(x) for x in text.split()]
+output = find_largest(num_list)
+print("Numbers:", output["numbers"])
+print("Largest:", output["largest"])`,
+
+    fixedCode: String.raw`def find_largest(numbers):
+    largest = numbers[0]
+    for num in numbers:
+        if num > largest:
+            largest = num
+
+    result = {
+        "numbers": numbers,
+        "largest": largest
+    }
+    return result
+
+text = input()
+num_list = [int(x) for x in text.split()]
+output = find_largest(num_list)
+print("Largest=", output["largest"])`,
+
+    hint: "Fix list indexing, loop variable, comparison direction",
+    fragment: "FRAGMENT5",
+    testcases: {
+      visible: [
+        { input: "5 10 2 8", expectedOutput: "10" },
+        { input: "-5 -1 -7 -3", expectedOutput: "-1" }
+      ],
+      hidden: [
+        { input: "100", expectedOutput: "100" },
+        { input: "15 22 1 22 9", expectedOutput: "22" },
+        { input: "3 3 3 3", expectedOutput: "3" }
+      ]
+    }
+  }
+];
+
   const cPuzzles = [
     // --------------------------------------------------------
     // PUZZLE 1 — RECURSIVE BINARY SEARCH
@@ -711,7 +854,7 @@ int main() {
     const endpoint = loggedInYear === "1st" ? "/submit-python" : "/submit-c";
 
     try {
-      const response = await fetch(`http://localhost:3000${endpoint}`, {
+      const response = await fetch(`${import.meta.env.VITE_COMPILER}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
