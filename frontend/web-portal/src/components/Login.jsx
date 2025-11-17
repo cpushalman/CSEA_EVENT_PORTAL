@@ -11,8 +11,8 @@ import { AuthContext } from '../context/AuthContext';
 const USE_BACKEND = true; // Change to true when ready to reconnect backend
 
 // Inline minimal API client (no extra files)
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
-
+const API_BASE = (import.meta.env.VITE_AUTH_URL)
+console.log(API_BASE)
 function decodeJwt(token) {
   try {
     const [, payload] = token.split('.');
@@ -368,7 +368,7 @@ const Login = ({ onLogin }) => {
           }
         }}
       >
-        <source src={loginBgVideo} type="video/mp4" />
+        <source src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763395847/login-bg_nu6bt3.mp4"} type="video/mp4" />
         <source src="/login-bg.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>

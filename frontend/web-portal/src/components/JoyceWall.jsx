@@ -456,7 +456,7 @@ export default function JoyceWall({
       const token = localStorage.getItem("token");
 
       // Make POST request to backend
-      const response = await fetch("http://localhost:5000/api/v1/round3/submit", {
+      const response = await fetch(`${import.meta.env.VITE_APP_URL}/round3/submit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -658,7 +658,7 @@ export default function JoyceWall({
         >
           <video
             ref={finaleVideoRef}
-            src={finaleVideo}
+            src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763396363/stranger-things-finale_hu8hod.mp4"}
             className="joyce-wall-video finale-video"
             onLoadedMetadata={handleFinaleVideoLoaded}
             onTimeUpdate={handleFinaleTimeUpdate}

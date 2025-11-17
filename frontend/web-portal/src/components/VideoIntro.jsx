@@ -432,7 +432,7 @@ const VideoIntro = ({ onComplete, onFadeInLogin }) => {
       <video
         ref={videoRef}
         className={`intro-video ${videoHidden ? 'hidden' : ''}`}
-        src={strangerIntroVideo}
+        src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763396299/stranger-intro_dzcydz.mp4"}
         playsInline
         preload="auto"
         style={{
@@ -451,7 +451,7 @@ const VideoIntro = ({ onComplete, onFadeInLogin }) => {
       {/* Audio element - hidden, for sound only */}
       <audio
         ref={audioRef}
-        src={strangerIntroVideo}
+        src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763396299/stranger-intro_dzcydz.mp4"}
         preload="auto"
         style={{ display: 'none' }}
       />

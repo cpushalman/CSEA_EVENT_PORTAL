@@ -151,7 +151,7 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
 
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/v1/round1/getallquestion/${year}`,
+          `${import.meta.env.VITE_APP_URL}/round1/getallquestion/${year}`,
           { signal: controller.signal }
         );
         console.log(res.data.data);
@@ -309,7 +309,7 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
       setError("");
 
       const res = await axios.post(
-        "http://localhost:5000/api/v1/round1/player/submit-answer",
+        `${import.meta.env.VITE_APP_URL}/round1/player/submit-answer`,
         {
           questionId: currentChallenge._id,
           userAnswer: userAnswer,
@@ -439,7 +439,7 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
           <video
             ref={rewardVideoRef}
             className="reward-video"
-            src={roundOneRewardVideo}
+            src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763396205/round-one-reward_ncau01.mp4"}
             autoPlay
             playsInline
             preload="auto"
@@ -540,7 +540,7 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
               zIndex: 0,
             }}
           >
-            <source src={roundOneBgVideo} type="video/mp4" />
+            <source src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763396140/roundone-bg_qo4sy6.mp4"} type="video/mp4" />
           </video>
 
           <div
@@ -559,10 +559,16 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
                       Complete this round to save Max
                     </p>
                   </div>
-                  <h3 className="expanded-challenge-title">
+                  <h3
+                    className="expanded-challenge-title"
+                    style={{ marginTop: "0.5rem", marginBottom: "0.5rem" }}
+                  >
                     {currentChallenge.title}
                   </h3>
-                  <p className="expanded-challenge-desc">
+                  <p
+                    className="expanded-challenge-desc"
+                    style={{ marginBottom: "0.75rem" }}
+                  >
                     {currentChallenge.description}
                   </p>
                 </>
@@ -674,24 +680,43 @@ const RoundOne = ({ loggedInYear, onComplete }) => {
                       }
                       alt="Steganography challenge"
                       style={{
-                        width: "50%",
+                        width: "40%",
                         maxWidth: "100%",
-                        marginBottom: "1rem",
+                        marginBottom: "0.5rem",
                         borderRadius: "8px",
                       }}
                     />
                   )}
-                  <p className="challenge-text-large">
+                  <p
+                    className="challenge-text-large"
+                    style={{ fontSize: "0.9rem", margin: "0.5rem 0" }}
+                  >
                     {currentChallenge.challenge}
                   </p>
                   <a
-                    href={loggedInYear=="1st"?"https://drive.google.com/file/d/11tqJX3rxUc_TlwEiPh-h4GCdif8pBmBJ/view?usp=sharing" :"https://drive.google.com/file/d/1K9_QOBeG3k7rX36TDuu2Xe52GG7XDUQ7/view?usp=sharing"}
+                    href={
+                      loggedInYear == "1st"
+                        ? "https://drive.google.com/file/d/11tqJX3rxUc_TlwEiPh-h4GCdif8pBmBJ/view?usp=sharing"
+                        : "https://drive.google.com/file/d/1K9_QOBeG3k7rX36TDuu2Xe52GG7XDUQ7/view?usp=sharing"
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
+                    style={{
+                      fontSize: "0.85rem",
+                      marginBottom: "0.3rem",
+                      display: "inline-block",
+                    }}
                   >
                     G Drive link
                   </a>
-                  <small className="challenge-hint">
+                  <small
+                    className="challenge-hint"
+                    style={{
+                      fontSize: "0.75rem",
+                      display: "block",
+                      marginTop: "0.3rem",
+                    }}
+                  >
                     Analyze the image for hidden text or data
                   </small>
                 </div>
