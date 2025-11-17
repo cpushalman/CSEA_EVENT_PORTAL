@@ -7,7 +7,7 @@ import {
   deleteAnswer,
   submitPlayerAnswer
 } from '../controllers/round3Controller.js';
-
+import { verifyToken } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // POST /api/v1/round3/answers
@@ -24,7 +24,7 @@ router.put('/answers/:id', updateAnswer);
 router.delete('/answers/:id', deleteAnswer);
 
 // PLAYER submits answer (must use verifyToken in main server)
-router.post('/submit', submitPlayerAnswer);
+router.post('/submit',verifyToken, submitPlayerAnswer);
 
 
 export default router;
