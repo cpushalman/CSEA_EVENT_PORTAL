@@ -22,7 +22,14 @@ const RoundTwo = ({
   const [isRunning, setIsRunning] = useState(false);
   const [fragments, setFragmentsLocal] = useState(parentFragments);
   const [error, setError] = useState("");
-  const [puzzleCompleted, setPuzzleCompleted] = useState(new Set());
+  const [puzzleCompleted, setPuzzleCompleted] = useState(() => {
+    try {
+      const saved = localStorage.getItem("round2CompletedPuzzles");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
   const [showJoyceWall, setShowJoyceWall] = useState(false);
   const [triggerWord, setTriggerWord] = useState("");
 
@@ -32,6 +39,18 @@ const RoundTwo = ({
       setFragmentsLocal(parentFragments);
     }
   }, [parentFragments, fragments.length]);
+
+  // Save completed puzzles to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "round2CompletedPuzzles",
+        JSON.stringify(Array.from(puzzleCompleted))
+      );
+    } catch (e) {
+      // ignore localStorage errors
+    }
+  }, [puzzleCompleted]);
 
   const language = loggedInYear === "1st" ? "Python" : "C";
 
@@ -1028,6 +1047,12 @@ int main() {
       puzzleCompleted.size === 0
     ) {
       setCurrentPuzzle(firstIncomplete);
+    } else if (puzzleCompleted.size > 0) {
+      // If there are completed puzzles, start from first incomplete
+      const nextIncomplete = getNextIncompleteIndex(0);
+      if (nextIncomplete !== -1) {
+        setCurrentPuzzle(nextIncomplete);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
