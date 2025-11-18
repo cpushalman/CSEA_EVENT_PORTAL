@@ -63,7 +63,7 @@ const GateSequence = ({ onComplete }) => {
         >
           <video
             ref={gateVideoRef}
-            src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763431074/joyvewall-teleki_quend2.mp4"}
+            src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763396408/gate_gmsuxb.mp4"}
             className="gate-video"
             autoPlay
             playsInline
