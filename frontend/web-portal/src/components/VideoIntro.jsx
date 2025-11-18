@@ -499,6 +499,8 @@ const VideoIntro = ({ onComplete, onFadeInLogin }) => {
                 <div className="thanks-secretary-item">Secretary - Arulkumara B R</div>
                 <div className="thanks-secretary-item">Joint Secretary - Sanjay Jayakumar</div>
                 <div className="thanks-secretary-item">Joint Secretary - Delicia Angeline</div>
+                <div className="thanks-secretary-item">Executive Member - Ahamed Shalman H</div>
+                <div className="thanks-secretary-item">Executive Member - Dharanesh K</div>
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap");
 
 /* Credits Container */
 .credits-container {
@@ -52,6 +52,16 @@
   -moz-user-select: none;
   -ms-user-select: none;
   caret-color: transparent;
+  animation: scrollCredits 60s linear forwards;
+}
+
+@keyframes scrollCredits {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
 }
 
 /* Opening Title */
@@ -61,7 +71,7 @@
 }
 
 .credits-main-title {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 4rem;
   font-weight: 700;
   color: #ffffff;
@@ -72,7 +82,7 @@
 }
 
 .credits-main-subtitle {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 1.5rem;
   font-weight: 400;
   color: #ffffff;
@@ -88,7 +98,7 @@
 }
 
 .credits-section-title {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 2.5rem;
   font-weight: 700;
   color: #ffffff;
@@ -110,7 +120,7 @@
 }
 
 .credits-role {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 1rem;
   font-weight: 400;
   color: #ffffff;
@@ -121,7 +131,7 @@
 }
 
 .credits-name {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 1.8rem;
   font-weight: 600;
   color: #ffffff;
@@ -135,7 +145,7 @@
 }
 
 .credits-closing-line {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 3rem;
   font-weight: 700;
   color: #ffffff;
@@ -146,7 +156,7 @@
 }
 
 .credits-logo {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 1.5rem;
   font-weight: 400;
   color: #ffffff;

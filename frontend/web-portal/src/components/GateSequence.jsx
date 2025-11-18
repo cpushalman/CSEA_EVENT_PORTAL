@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import gateVideo from '../assets/gate.mp4';
-import './GateSequence.css';
+import React, { useState, useEffect, useRef } from "react";
+import gateVideo from "../assets/gate.mp4";
+import "./GateSequence.css";
 
 const GateSequence = ({ onComplete }) => {
   const [showGateVideo, setShowGateVideo] = useState(false);
   const [gateVideoFadeIn, setGateVideoFadeIn] = useState(false);
-  const [showTypingPage, setShowTypingPage] = useState(false);
-  const [startLine1Reveal, setStartLine1Reveal] = useState(false);
-  const [startLine2Reveal, setStartLine2Reveal] = useState(false);
+  const [showMessagePage, setShowMessagePage] = useState(false);
   const gateVideoRef = useRef(null);
 
-  const fullText1 = "The Upside Down has been opened.";
-  const fullText2 = "Eleven needs your help to get past the passageway";
+  const message1 = "The Upside Down has been opened.";
+  const message2 = "Eleven needs your help to get past the passageway.";
 
   // Start gate video after 1 second delay, then fade in
   useEffect(() => {
@@ -30,67 +28,42 @@ const GateSequence = ({ onComplete }) => {
     };
   }, []);
 
-  // Handle gate video end - transition to typing page
+  // Handle gate video end - transition to message page
   const handleGateVideoEnd = () => {
-    // Smooth transition: hide gate video, show typing page, then start animation
+    // Smooth transition: hide gate video, show message page
     setShowGateVideo(false);
-    // Small delay to ensure smooth transition
     setTimeout(() => {
-      setShowTypingPage(true);
-      // Start typing animation after a brief moment to ensure page is visible
-      setTimeout(() => {
-        startTypingAnimation();
-      }, 100);
+      setShowMessagePage(true);
     }, 300);
   };
 
-  // Start fade in animation
-  const startTypingAnimation = () => {
-    // Reset states to ensure clean start
-    setStartLine1Reveal(false);
-    setStartLine2Reveal(false);
-    
-    // Start both lines fading in together
-    setTimeout(() => {
-      setStartLine1Reveal(true);
-      setStartLine2Reveal(true);
-      
-      // After 1.5 seconds, fade out and transition to Round 1
-      setTimeout(() => {
-        setStartLine1Reveal(false);
-        setStartLine2Reveal(false);
-        
-        // Wait for fade out to complete, then transition
-        setTimeout(() => {
-          if (onComplete) {
-            onComplete();
-          }
-        }, 2500); // Wait for fade out animation (2.5 seconds)
-      }, 1500); // Show text for 1.5 seconds
-    }, 100);
+  // Handle tap to continue button
+  const handleContinue = () => {
+    if (onComplete) {
+      onComplete();
+    }
   };
-
 
   return (
     <>
       {/* Gate Video */}
       {showGateVideo && (
-        <div 
+        <div
           className="gate-video-container"
           style={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
-            width: '100vw',
-            height: '100vh',
+            width: "100vw",
+            height: "100vh",
             zIndex: 10000,
             opacity: gateVideoFadeIn ? 1 : 0,
-            transition: 'opacity 1s ease-in-out'
+            transition: "opacity 1s ease-in-out",
           }}
         >
           <video
             ref={gateVideoRef}
-            src={gateVideo}
+            src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763431074/joyvewall-teleki_quend2.mp4"}
             className="gate-video"
             autoPlay
             playsInline
@@ -98,86 +71,126 @@ const GateSequence = ({ onComplete }) => {
             controls={false}
             onEnded={handleGateVideoEnd}
             style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover'
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
             }}
           />
         </div>
       )}
 
-      {/* Typing Page with Black Background */}
-      {showTypingPage && (
-        <div 
-          className="typing-page-container"
+      {/* Message Page with Black Background */}
+      {showMessagePage && (
+        <div
+          className="message-page-container"
+          onClick={handleContinue}
           style={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
-            width: '100vw',
-            height: '100vh',
+            width: "100vw",
+            height: "100vh",
             zIndex: 10001,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#000000',
-            opacity: 1,
-            transition: 'opacity 0.5s ease-in-out'
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#000000",
+            padding: "2rem",
+            cursor: "pointer",
           }}
         >
-          {/* Typing Text Content */}
-          <div 
-            className="typing-text-content"
+          {/* Message Content with Fade In */}
+          <div
+            className="message-content fade-in"
             style={{
-              position: 'relative',
-              zIndex: 1,
-              maxWidth: '80%',
-              padding: '2rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1.5rem'
+              maxWidth: "800px",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "3rem",
+              padding: "2rem",
             }}
           >
-            <div 
-              className={`typing-line-1 ${startLine1Reveal ? 'fade-in-active' : 'fade-out'}`}
+            {/* Heading in Red - Centered */}
+            <h1
+              className="fade-in"
               style={{
                 fontFamily: "'Cinzel', serif",
-                fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)',
-                fontWeight: 400,
-                textAlign: 'justify',
-                textAlignLast: 'justify',
-                minHeight: '1.5em',
-                letterSpacing: '1px',
-                lineHeight: 1.8,
-                color: 'rgba(255, 255, 255, 0.9)',
-                direction: 'ltr',
-                width: '100%',
-                maxWidth: '100%',
-                position: 'relative'
+                fontSize: "clamp(2rem, 5vw, 3.5rem)",
+                fontWeight: 700,
+                color: "#E6194B",
+                textAlign: "center",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                margin: 0,
               }}
             >
-              {fullText1}
+              Message
+            </h1>
+
+            {/* Message Text in White - Centered */}
+            <div
+              className="fade-in"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.5rem",
+                width: "100%",
+                alignItems: "center",
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)",
+                  fontWeight: 400,
+                  textAlign: "center",
+                  letterSpacing: "0.05em",
+                  lineHeight: 1.8,
+                  color: "#ffffff",
+                  margin: 0,
+                  padding: "0 1rem",
+                }}
+              >
+                {message1}
+              </p>
+
+              <p
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  fontSize: "clamp(1.1rem, 2.5vw, 1.5rem)",
+                  fontWeight: 400,
+                  textAlign: "center",
+                  letterSpacing: "0.05em",
+                  lineHeight: 1.8,
+                  color: "#ffffff",
+                  margin: 0,
+                  padding: "0 1rem",
+                }}
+              >
+                {message2}
+              </p>
             </div>
-            
-            <div 
-              className={`typing-line-2 ${startLine2Reveal ? 'fade-in-active' : 'fade-out'}`}
+
+            {/* Tap to Continue Text - Bottom Right, Low Contrast White */}
+            <div
+              className="fade-in"
               style={{
+                position: "absolute",
+                bottom: "1.5rem",
+                right: "3rem",
                 fontFamily: "'Cinzel', serif",
-                fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)',
-                fontWeight: 400,
-                textAlign: 'justify',
-                textAlignLast: 'justify',
-                minHeight: '1.5em',
-                letterSpacing: '1px',
-                lineHeight: 1.8,
-                color: 'rgba(255, 255, 255, 0.9)',
-                direction: 'ltr',
-                width: '100%',
-                maxWidth: '100%',
-                position: 'relative'
+                fontSize: "clamp(0.85rem, 1.8vw, 1rem)",
+                fontWeight: 300,
+                color: "rgba(255, 255, 255, 0.4)",
+                letterSpacing: "0.08em",
+                textTransform: "lowercase",
               }}
             >
-              {fullText2}
+              tap to continue
             </div>
           </div>
         </div>
@@ -187,4 +200,3 @@ const GateSequence = ({ onComplete }) => {
 };
 
 export default GateSequence;
-

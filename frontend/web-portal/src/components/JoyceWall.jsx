@@ -4,6 +4,7 @@ import joyceWallVideo from "../assets/joycewall.mp4";
 import telepathyVideo from "../assets/telepathy-word.mp4"; // First year video
 // import secondYearVideo from '../assets/second-year-video.mp4'; // Second year video - add this file later
 import finaleVideo from "../assets/stranger-things-finale.mp4";
+import Credits from "./Credits";
 // Import background music files (add these audio files to your assets folder)
 // import narrativeMusic from '../assets/narrative-music.mp3';
 // import joyceWallMusic from '../assets/joyce-wall-music.mp3';
@@ -28,6 +29,7 @@ export default function JoyceWall({
   const [joyceWallVideoComplete, setJoyceWallVideoComplete] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [finaleVideoFading, setFinaleVideoFading] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
   const joyceWallVideoRef = useRef(null);
   const finaleVideoRef = useRef(null);
   const finaleVideoContainerRef = useRef(null);
@@ -67,7 +69,9 @@ export default function JoyceWall({
 
   // Select video based on logged in year
   const selectedJoyceWallVideo =
-    loggedInYear === "1st" ? "https://res.cloudinary.com/drxmhgudx/video/upload/v1763396452/telepathy-word_abfoyv.mp4" : "https://res.cloudinary.com/drxmhgudx/video/upload/v1763400483/WhatsApp_Video_2025-11-17_at_10.56.28_PM_cg3bm7.mp4"; // Use joyceWallVideo as placeholder until second year video is added
+    loggedInYear === "1st"
+      ? "https://res.cloudinary.com/drxmhgudx/video/upload/v1763431074/joyvewall-teleki_quend2.mp4"
+      : "https://res.cloudinary.com/drxmhgudx/video/upload/v1763396452/telepathy-word_abfoyv.mp4"; // Use joyceWallVideo as placeholder until second year video is added
 
   const [canContinue, setCanContinue] = useState(false);
 
@@ -326,11 +330,9 @@ export default function JoyceWall({
       setIsFullscreen(false);
     }, 500);
 
-    // Call onComplete to show credits after fade-out completes
+    // Show credits after fade-out completes
     setTimeout(() => {
-      if (onComplete) {
-        onComplete();
-      }
+      setShowCredits(true);
     }, 2000);
   };
 
@@ -456,17 +458,20 @@ export default function JoyceWall({
       const token = localStorage.getItem("token");
 
       // Make POST request to backend
-      const response = await fetch(`${import.meta.env.VITE_APP_URL}/round3/submit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          year: year,
-          answer: userPassword,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_URL}/round3/submit`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            year: year,
+            answer: userPassword,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -542,6 +547,11 @@ export default function JoyceWall({
       exitFullscreenSafe();
     };
   }, []);
+
+  // If credits should be shown, render Credits component
+  if (showCredits) {
+    return <Credits onComplete={onComplete} />;
+  }
 
   return (
     <div className="joyce-wall-container">
@@ -658,7 +668,9 @@ export default function JoyceWall({
         >
           <video
             ref={finaleVideoRef}
-            src={"https://res.cloudinary.com/drxmhgudx/video/upload/v1763396363/stranger-things-finale_hu8hod.mp4"}
+            src={
+              "https://res.cloudinary.com/drxmhgudx/video/upload/v1763396363/stranger-things-finale_hu8hod.mp4"
+            }
             className="joyce-wall-video finale-video"
             onLoadedMetadata={handleFinaleVideoLoaded}
             onTimeUpdate={handleFinaleTimeUpdate}

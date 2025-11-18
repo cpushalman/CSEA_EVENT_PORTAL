@@ -4,6 +4,7 @@ import RoundOne from "./components/RoundOne";
 import RoundTwo from "./components/RoundTwo";
 import JoyceWall from "./components/JoyceWall";
 import Login from "./components/Login";
+import GateSequence from "./components/GateSequence";
 // import StrangerThingsIntro from './components/StrangerThingsIntro' // Disabled - using video intro instead
 import VideoIntro from "./components/VideoIntro";
 
@@ -17,7 +18,77 @@ function App() {
   const [showIntro, setShowIntro] = useState(false); // Will be set based on localStorage check
   const [loginFadeIn, setLoginFadeIn] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [showGateSequence, setShowGateSequence] = useState(false);
 
+  // useEffect(() => {
+
+  //   // Logout function
+  //   const forceLogout = () => {
+  //     localStorage.removeItem("token");
+  //     localStorage.removeItem("currentRound");
+  //     localStorage.removeItem("introPlayed");
+  //     localStorage.removeItem("loggedInYear");
+  //     localStorage.removeItem("rollNumber");
+  //     localStorage.removeItem("user");
+
+  //     // you can also clear all if needed:
+  //     // localStorage.clear();
+  //     // sessionStorage.clear();
+
+  //     window.location.reload(); // refresh page
+  //   };
+
+  //   // Detect DevTools
+  //   let devtoolsOpen = false;
+
+  //   const checkDevtools = () => {
+  //     const threshold = 160; // width/height threshold
+  //     const widthDiff = window.outerWidth - window.innerWidth;
+  //     const heightDiff = window.outerHeight - window.innerHeight;
+
+  //     if (
+  //       widthDiff > threshold ||
+  //       heightDiff > threshold ||
+  //       devtoolsOpen
+  //     ) {
+  //       devtoolsOpen = true;
+  //       forceLogout();
+  //     }
+  //   };
+
+  //   const interval = setInterval(checkDevtools, 500);
+
+  //   return () => clearInterval(interval);
+  // }, []);
+
+  // useEffect(() => {
+  //   // Disable right click
+
+  //   document.addEventListener("contextmenu", e => e.preventDefault());
+
+  //   // Disable F12, Ctrl+Shift+I, Ctrl+U, etc.
+  //   document.onkeydown = (e) => {
+  //     if (
+  //       e.key === "F12" ||
+  //       (e.ctrlKey && e.shiftKey && e.key === "I") ||
+  //       (e.ctrlKey && e.shiftKey && e.key === "J") ||
+  //       (e.ctrlKey && e.key === "U")
+  //     ) {
+  //       e.preventDefault();
+  //     }
+  //   };
+
+  //   // DevTools detection (basic)
+  //   const detectDevTools = setInterval(() => {
+  //     const start = performance.now();
+  //     debugger;
+  //     if (performance.now() - start > 100) {
+  //       window.location.href = "/"; // or show alert
+  //     }
+  //   }, 500);
+
+  //   return () => clearInterval(detectDevTools);
+  // }, []);
   // Auto-hide toast
   useEffect(() => {
     if (!showToast) return;
@@ -59,6 +130,13 @@ function App() {
         // Intro has been played - skip it and show login immediately
         setShowIntro(false);
         setLoginFadeIn(true);
+      }
+
+      // Check if gate sequence has been played for logged in users
+      const gateSequencePlayed = localStorage.getItem("gateSequencePlayed");
+      if (saved && !gateSequencePlayed) {
+        // User is logged in but hasn't seen gate sequence yet
+        setShowGateSequence(true);
       }
     } catch (err) {
       // localStorage may be unavailable in some environments; ignore
@@ -133,6 +211,12 @@ function App() {
               try {
                 localStorage.setItem("loggedInYear", year);
                 if (rollNum) localStorage.setItem("rollNumber", rollNum);
+                // Check if gate sequence has been played before
+                const gateSequencePlayed =
+                  localStorage.getItem("gateSequencePlayed");
+                if (!gateSequencePlayed) {
+                  setShowGateSequence(true);
+                }
               } catch (e) {
                 /* ignore */
               }
@@ -159,6 +243,22 @@ function App() {
           />
         )}
       </>
+    );
+  }
+
+  // Show gate sequence after login (before rounds)
+  if (showGateSequence && loggedInYear) {
+    return (
+      <GateSequence
+        onComplete={() => {
+          setShowGateSequence(false);
+          try {
+            localStorage.setItem("gateSequencePlayed", "true");
+          } catch (e) {
+            // ignore
+          }
+        }}
+      />
     );
   }
 
