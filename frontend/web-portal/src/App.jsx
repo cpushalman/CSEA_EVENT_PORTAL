@@ -20,75 +20,75 @@ function App() {
   const [showCredits, setShowCredits] = useState(false);
   const [showGateSequence, setShowGateSequence] = useState(false);
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   // Logout function
-  //   const forceLogout = () => {
-  //     localStorage.removeItem("token");
-  //     localStorage.removeItem("currentRound");
-  //     localStorage.removeItem("introPlayed");
-  //     localStorage.removeItem("loggedInYear");
-  //     localStorage.removeItem("rollNumber");
-  //     localStorage.removeItem("user");
+    // Logout function
+    const forceLogout = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("currentRound");
+      localStorage.removeItem("introPlayed");
+      localStorage.removeItem("loggedInYear");
+      localStorage.removeItem("rollNumber");
+      localStorage.removeItem("user");
 
-  //     // you can also clear all if needed:
-  //     // localStorage.clear();
-  //     // sessionStorage.clear();
+      // you can also clear all if needed:
+      // localStorage.clear();
+      // sessionStorage.clear();
 
-  //     window.location.reload(); // refresh page
-  //   };
+      window.location.reload(); // refresh page
+    };
 
-  //   // Detect DevTools
-  //   let devtoolsOpen = false;
+    // Detect DevTools
+    let devtoolsOpen = false;
 
-  //   const checkDevtools = () => {
-  //     const threshold = 160; // width/height threshold
-  //     const widthDiff = window.outerWidth - window.innerWidth;
-  //     const heightDiff = window.outerHeight - window.innerHeight;
+    const checkDevtools = () => {
+      const threshold = 160; // width/height threshold
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
 
-  //     if (
-  //       widthDiff > threshold ||
-  //       heightDiff > threshold ||
-  //       devtoolsOpen
-  //     ) {
-  //       devtoolsOpen = true;
-  //       forceLogout();
-  //     }
-  //   };
+      if (
+        widthDiff > threshold ||
+        heightDiff > threshold ||
+        devtoolsOpen
+      ) {
+        devtoolsOpen = true;
+        forceLogout();
+      }
+    };
 
-  //   const interval = setInterval(checkDevtools, 500);
+    const interval = setInterval(checkDevtools, 500);
 
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
-  // useEffect(() => {
-  //   // Disable right click
+  useEffect(() => {
+    // Disable right click
 
-  //   document.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("contextmenu", e => e.preventDefault());
 
-  //   // Disable F12, Ctrl+Shift+I, Ctrl+U, etc.
-  //   document.onkeydown = (e) => {
-  //     if (
-  //       e.key === "F12" ||
-  //       (e.ctrlKey && e.shiftKey && e.key === "I") ||
-  //       (e.ctrlKey && e.shiftKey && e.key === "J") ||
-  //       (e.ctrlKey && e.key === "U")
-  //     ) {
-  //       e.preventDefault();
-  //     }
-  //   };
+    // Disable F12, Ctrl+Shift+I, Ctrl+U, etc.
+    document.onkeydown = (e) => {
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && e.key === "I") ||
+        (e.ctrlKey && e.shiftKey && e.key === "J") ||
+        (e.ctrlKey && e.key === "U")
+      ) {
+        e.preventDefault();
+      }
+    };
 
-  //   // DevTools detection (basic)
-  //   const detectDevTools = setInterval(() => {
-  //     const start = performance.now();
-  //     debugger;
-  //     if (performance.now() - start > 100) {
-  //       window.location.href = "/"; // or show alert
-  //     }
-  //   }, 500);
+    // DevTools detection (basic)
+    const detectDevTools = setInterval(() => {
+      const start = performance.now();
+      debugger;
+      if (performance.now() - start > 100) {
+        window.location.href = "/"; // or show alert
+      }
+    }, 500);
 
-  //   return () => clearInterval(detectDevTools);
-  // }, []);
+    return () => clearInterval(detectDevTools);
+  }, []);
   // Auto-hide toast
   useEffect(() => {
     if (!showToast) return;
